@@ -1,1 +1,2 @@
-celery==4.4.6
+redis==3.5.3
+youtube-dl==2020.7.28
