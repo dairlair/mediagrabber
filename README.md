@@ -1,13 +1,9 @@
 # MediaGrabber
-MediaGrabber is a cloud-native service which provides the ability to grab media from
-the world and store it in its own storage.
+The cloud native service for media grabbing
 
-Additional functionality is media thumbnails creation from the source.
+## How it works
+MediaGrabber is created to help us analyze high video traffic flow from dozens of services.
 
-# Run from the code
+The basic entity is the Video Page. Just an URL from any video service with unique video identifier like a https://www.youtube.com/watch?v=3AFTtiZVZ3o.
 
-```
-python3.8 -m venv venv
-source venv/bin/activate
-pip install -r requirements
-```
+MediaGrabber uses queue to receive a new new URLs for processing and results publishing.
