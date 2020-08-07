@@ -16,11 +16,12 @@ def callback(ch, method, properties, body):
     global count
     count += 1
     rps = count / (time.time() - start_time)
-    if (count % 10000 == 0):
-        print(f"\rRPS: {rps}" % body)
+    print(f"\rRPS: {rps}" % body)
+    # if (count % 10000 == 0):
+        # print(f"\rRPS: {rps}" % body)
 
 
-channel.basic_consume(queue='hello', on_message_callback=callback, auto_ack=True)
+channel.basic_consume(queue='hello', on_message_callback=callback, auto_ack=False)
 
 print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()

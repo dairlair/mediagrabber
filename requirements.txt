@@ -1,2 +1,2 @@
-redis==3.5.3
 youtube-dl==2020.7.28
+injector==0.18.3
