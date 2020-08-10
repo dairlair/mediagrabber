@@ -1,12 +1,26 @@
 import boto3
-from botocore.config import Config
+from botocore.exceptions import NoCredentialsError
 
-config = Config(
-    region_name = 'us-east-1',
-)
+region = 'us-east-1'
+filepath = '/home/reskator/wr-720.sh-18.jpg'
+bucket = 'mediagrabber-dev'
+key = 'wr-720.sh-18.jpg'
 
-def save(file_name: str):
-    s3 = boto3.client('s3', config=config, aws_access_key_id='AKIAIKOOWOEBPSHB5JZQ', aws_secret_access_key='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')
-    with open(file_name, "rb") as f:
-        result = s3.upload_fileobj(f, "mediagrabber-dev", file_name)
-        print(result)
+
+def upload_to_aws(local_file, bucket, s3_file):
+    s3 = boto3.client('s3', aws_access_key_id='AKIAIKOOWOEBPSHB5JZQ',
+                      aws_secret_access_key='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')
+
+    try:
+        with open(local_file, 'rb') as data:
+            s3.upload_fileobj(data, bucket, key)
+        print("Upload Successful")
+        return True
+    except FileNotFoundError:
+        print("The file was not found")
+        return False
+    except NoCredentialsError:
+        print("Credentials not available")
+        return False
+
+upload_to_aws(filepath, bucket, key)
