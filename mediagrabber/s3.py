@@ -2,6 +2,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 from mediagrabber import StorageInterface
 from urllib.parse import urlparse
+from typing import Optional
 
 
 class S3Storage(StorageInterface):
@@ -9,47 +10,20 @@ class S3Storage(StorageInterface):
     aws_secret_access_key: str
     region: str
     bucket: str
-    """
-    Accepts credentials and config for S3 compatible object storage in the URL format.
-    URL must be in format:
-        s3://<aws_access_key_id>:<aws_secret_access_key>@<host>/<region>/<bucket>
-    """
-    def __init__(self, url: str):
-        parts = urlparse(url)
-        self.aws_access_key_id = parts.username
-        self.aws_secret_access_key = parts.password
-        paths = parts.path.split('/')
-        self.region = paths[0]
-        self.bucket = paths[1] if len(paths) > 1 else None
-        
+    host: Optional[str]
 
-    def save(self, content: bytes, name: str) -> str:
-        return 'xxx'
+    def __init__(self, aws_access_key_id, aws_secret_access_key, region, bucket, host=None):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+        self.region = region
+        self.bucket = bucket
+        self.host = host
 
+    def get_client(self):
+        # config = Config(signature_version=botocore.UNSIGNED)
+        return boto3.client('s3', aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
 
-# region = 'us-east-1'
-# filepath = '/home/reskator/wr-720.sh-18.jpg'
-# bucket = 'mediagrabber-dev'
-# key = 'wr-720.sh-18.jpg'
-
-s3://AKIAIKOOWOEBPSHB5JZQ:ja9cxuvd7RpfadVPGrbuAQyL3uLBwh2l22Kzq29x@
-
-
-# def upload_to_aws(local_file, bucket, s3_file):
-#     s3 = boto3.client('s3', aws_access_key_id='AKIAIKOOWOEBPSHB5JZQ',
-#                       aws_secret_access_key='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')
-
-#     try:
-#         with open(local_file, 'rb') as data:
-#             s3.upload_fileobj(data, bucket, key)
-#         print("Upload Successful")
-
-#         return True
-#     except FileNotFoundError:
-#         print("The file was not found")
-#         return False
-#     except NoCredentialsError:
-#         print("Credentials not available")
-#         return False
-
-# upload_to_aws(filepath, bucket, key)
+    def save(self, data: bytes, key: str) -> str:
+        client = self.get_client()
+        client.upload_fileobj(data, self.bucket, key, ExtraArgs={'ACL':'public-read'})
+        return f'https://{self.bucket}.s3.amazonaws.com/{key}'
