@@ -12,7 +12,7 @@ class StorageInterface(ABC):
 
 class VideoFramesRetrieverInterface(ABC):
     @abstractmethod
-    def get_frames(self, url: str) -> List[bytes]:
+    def get_frames(self, video_page_url: str) -> List[bytes]:
         raise NotImplementedError
 
 
