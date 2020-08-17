@@ -3,6 +3,12 @@ from typing import Callable, List
 from injector import inject
 from io import BytesIO
 
+class MediaGrabberError(Exception):
+    """
+        Just a general error for MediaGrabber
+    """
+    pass
+
 
 class StorageInterface(ABC):
     @abstractmethod

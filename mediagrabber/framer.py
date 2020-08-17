@@ -1,23 +1,54 @@
-# The Frames is an implementation of the `VideoFramesRetrieverInterface`
-# based on the `youtube-dl` library.
+# The OpencvVideoFramesRetriever is an implementation of the `VideoFramesRetrieverInterface`
+# based on the `youtube-dl` library for video downloading and `opencv` for frames retrieving
 from typing import List
-from mediagrabber import VideoFramesRetrieverInterface
+from mediagrabber import VideoFramesRetrieverInterface, MediaGrabberError
 import youtube_dl
 import subprocess
 import datetime
 import os
 import cv2
+import hashlib
 
-class Framer(VideoFramesRetrieverInterface):
+class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
+    workdir: str
+    def __init__(self, workdir: str):
+        self.workdir = workdir
+        print('Workdir: ' + workdir)
+
+
+    def download_video(self, video_page_url: str) -> str:
+        """
+        Downloads videos from the specified page and stores the file in the `workdirectory`
+        Returns the full path to the downloaded video file.
+        """
+        video_directory = self.create_video_directory(video_page_url)
+        video_file_path = os.path.join(video_directory, 'source.mp4')
+        retcode = subprocess.call(['youtube-dl', '-f', 'bestvideo[height<=480]+bestaudio/best[height<=480]', video_page_url, '-o', video_file_path])
+        if retcode > 0:
+            raise MediaGrabberError("Video downloading failed")
+
+        return video_file_path
+
+
+    def create_video_directory(self, video_page_url) -> str:
+        video_directory = os.path.join(self.workdir, hashlib.md5(str(video_page_url).encode('utf-8')).hexdigest())
+
+        try:
+            os.mkdir(video_directory)
+        except FileExistsError:
+            pass
+
+        return video_directory
+
+
     def get_frames(self, video_page_url: str) -> List[bytes]:
-        subprocess.call(['youtube-dl', '-f', 'bestvideo[height<=480]+bestaudio/best[height<=480]', video_page_url, '-o', "movie.mp4"])
-        print ('Downloaded')
+        video_file_path = self.download_video(video_page_url)
+        frames_dir = os.path.dirname(video_file_path)
+        print('Frames directory: ' + frames_dir)
         start = datetime.datetime.now()
-        extract_frames('movie.mp4', './frames')
+        extract_frames(video_file_path, frames_dir, every=100)
         print('Duration:')
         print(datetime.datetime.now() - start)
-        # url: str = self.get_video_url(video_page_url)
-        # print('Video URL: [' + url + ']')
         return []
 
     @staticmethod
@@ -73,9 +104,11 @@ def extract_frames(video_path, frames_dir, overwrite=False, start=-1, end=-1, ev
 
         if frame % every == 0:  # if this is a frame we want to write out based on the 'every' argument
             while_safety = 0  # reset the safety count
-            save_path = os.path.join(frames_dir, video_filename, "{:010d}.jpg".format(frame))  # create the save path
+            save_path = os.path.join(frames_dir, "{:010d}.jpg".format(frame))  # create the save path
             if not os.path.exists(save_path) or overwrite:  # if it doesn't exist or we want to overwrite anyways
-                cv2.imwrite(save_path, image)  # save the extracted image
+                saved = cv2.imwrite(save_path, image)  # save the extracted image
+                if not saved:
+                    print("Can not write to [" + save_path + "]")
                 saved_count += 1  # increment our counter by one
 
         frame += 1  # increment our frame count
@@ -87,7 +120,8 @@ def extract_frames(video_path, frames_dir, overwrite=False, start=-1, end=-1, ev
 
 
 url = 'https://abcnews.go.com/Technology/video/garmin-outage-affects-millions-72012069'
-f = Framer()
+url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5e594b0eae0c8'
+f = OpencvVideoFramesRetriever(os.path.realpath('workdir'))
 frames = f.get_frames(url)
 
 print(frames)
