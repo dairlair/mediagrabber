@@ -9,12 +9,13 @@ import os
 import cv2
 import hashlib
 
+
 class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
     workdir: str
+
     def __init__(self, workdir: str):
         self.workdir = workdir
         print('Workdir: ' + workdir)
-
 
     def download_video(self, video_page_url: str) -> str:
         """
@@ -22,16 +23,17 @@ class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
         Returns the full path to the downloaded video file.
         """
         video_directory = self.create_video_directory(video_page_url)
-        video_file_path = os.path.join(video_directory, 'source.mp4')
-        retcode = subprocess.call(['youtube-dl', '-f', 'bestvideo[height<=480]+bestaudio/best[height<=480]', video_page_url, '-o', video_file_path])
+        path = os.path.join(video_directory, 'source.mp4')
+        args = ['youtube-dl', '-f', 'bestvideo[height<=480]+bestaudio/best[height<=480]', video_page_url, '-o', path]
+        retcode = subprocess.call(args)
         if retcode > 0:
             raise MediaGrabberError("Video downloading failed")
 
-        return video_file_path
-
+        return path
 
     def create_video_directory(self, video_page_url) -> str:
-        video_directory = os.path.join(self.workdir, hashlib.md5(str(video_page_url).encode('utf-8')).hexdigest())
+        video_directory = os.path.join(self.workdir, hashlib.md5(
+            str(video_page_url).encode('utf-8')).hexdigest())
 
         try:
             os.mkdir(video_directory)
@@ -40,14 +42,15 @@ class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
 
         return video_directory
 
-
     def get_frames(self, video_page_url: str) -> List[bytes]:
         video_file_path = self.download_video(video_page_url)
         frames_dir = os.path.dirname(video_file_path)
         print('Frames directory: ' + frames_dir)
         start = datetime.datetime.now()
-        extract_frames(video_file_path, frames_dir, every=100)
-        print('Duration:')
+        # extract_frames(video_file_path, frames_dir)
+        frames = filter_frames(retrieve_frames(video_file_path))
+        save_frames(frames, os.path.dirname(video_file_path))
+        print('Duration for ' + str(len(frames)) + ' frames retrieving:')
         print(datetime.datetime.now() - start)
         return []
 
@@ -59,36 +62,64 @@ class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
         return meta['url']
 
 
-def extract_frames(video_path, frames_dir, overwrite=False, start=-1, end=-1, every=1):
-    """
-    Extract frames from a video using OpenCVs VideoCapture
-    :param video_path: path of the video
-    :param frames_dir: the directory to save the frames
-    :param overwrite: to overwrite frames that already exist?
-    :param start: start frame
-    :param end: end frame
-    :param every: frame spacing
-    :return: count of images saved
-    """
+def get_image_difference(image_1, image_2):
+    first_image_hist = cv2.calcHist([image_1], [0], None, [256], [0, 256])
+    second_image_hist = cv2.calcHist([image_2], [0], None, [256], [0, 256])
 
-    video_path = os.path.normpath(video_path)  # make the paths OS (Windows) compatible
-    frames_dir = os.path.normpath(frames_dir)  # make the paths OS (Windows) compatible
+    img_hist_diff = cv2.compareHist(
+        first_image_hist, second_image_hist, cv2.HISTCMP_BHATTACHARYYA)
+    img_template_probability_match = cv2.matchTemplate(
+        first_image_hist, second_image_hist, cv2.TM_CCOEFF_NORMED)[0][0]
+    img_template_diff = 1 - img_template_probability_match
 
-    video_dir, video_filename = os.path.split(video_path)  # get the video path and filename from the path
+    # taking only 10% of histogram diff, since it's less accurate than template method
+    commutative_image_diff = (img_hist_diff / 10) + img_template_diff
+    return commutative_image_diff
 
-    assert os.path.exists(video_path)  # assert the video file exists
 
+def retrieve_frames(video_file_path) -> List:
+    capture = cv2.VideoCapture(video_file_path)  # open the video using OpenCV
+    imgs: List = []
+    success, img = capture.read()
+    while success:
+        imgs.append(img)
+        success, img = capture.read()
+
+    return imgs
+
+def filter_frames(frames: List):
+    filtered_frames = []
+    current_frame = None
+    for frame in frames:
+        if current_frame is None:
+            current_frame = frame
+        else:
+            diff = get_image_difference(current_frame, frame)
+            # print('Images difference is ' + str(diff))
+            current_frame = frame
+            if diff >= 0.5:
+                filtered_frames.append(frame)
+
+    return filtered_frames
+
+def save_frames(frames: List, path: str) -> None:
+    for i, frame in enumerate(frames):
+        save_path = os.path.join(path, "{:010d}.jpg".format(i))
+        cv2.imwrite(save_path, image)
+
+
+def extract_frames(video_path, frames_dir):
     capture = cv2.VideoCapture(video_path)  # open the video using OpenCV
-
-    if start < 0:  # if start isn't specified lets assume 0
-        start = 0
     if end < 0:  # if end isn't specified assume the end of the video
         end = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
     capture.set(1, start)  # set the starting frame of the capture
     frame = start  # keep track of which frame we are up to, starting from start
-    while_safety = 0  # a safety counter to ensure we don't enter an infinite while loop (hopefully we won't need it)
+    # a safety counter to ensure we don't enter an infinite while loop (hopefully we won't need it)
+    while_safety = 0
     saved_count = 0  # a count of how many frames we have saved
+
+    current_image = None
 
     while frame < end:  # lets loop through the frames until the end
 
@@ -99,14 +130,28 @@ def extract_frames(video_path, frames_dir, overwrite=False, start=-1, end=-1, ev
 
         # sometimes OpenCV reads None's during a video, in which case we want to just skip
         if image is None:  # if we get a bad return flag or the image we read is None, lets not save
-            while_safety += 1  # add 1 to our while safety, since we skip before incrementing our frame variable
+            # add 1 to our while safety, since we skip before incrementing our frame variable
+            while_safety += 1
             continue  # skip
+
+        if current_image is None:
+            current_image = image
+        else:
+            diff = get_image_difference(current_image, image)
+            # print('Images difference is ' + str(diff))
+            current_image = image
+            if diff < 0.5:
+                continue
 
         if frame % every == 0:  # if this is a frame we want to write out based on the 'every' argument
             while_safety = 0  # reset the safety count
-            save_path = os.path.join(frames_dir, "{:010d}.jpg".format(frame))  # create the save path
-            if not os.path.exists(save_path) or overwrite:  # if it doesn't exist or we want to overwrite anyways
-                saved = cv2.imwrite(save_path, image)  # save the extracted image
+            # create the save path
+            save_path = os.path.join(frames_dir, "{:010d}.jpg".format(frame))
+            print('save path: ' + save_path)
+            # if it doesn't exist or we want to overwrite anyways
+            if not os.path.exists(save_path) or overwrite:
+                # save the extracted image
+                saved = cv2.imwrite(save_path, image)
                 if not saved:
                     print("Can not write to [" + save_path + "]")
                 saved_count += 1  # increment our counter by one
@@ -118,9 +163,10 @@ def extract_frames(video_path, frames_dir, overwrite=False, start=-1, end=-1, ev
     return saved_count  # and return the count of the images we saved
 
 
+# url = 'https://abcnews.go.com/Technology/video/garmin-outage-affects-millions-72012069'
+url = 'https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309'
+# url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5e594b0eae0c8'
 
-url = 'https://abcnews.go.com/Technology/video/garmin-outage-affects-millions-72012069'
-url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5e594b0eae0c8'
 f = OpencvVideoFramesRetriever(os.path.realpath('workdir'))
 frames = f.get_frames(url)
 
