@@ -24,7 +24,8 @@ class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
         """
         video_directory = self.create_video_directory(video_page_url)
         path = os.path.join(video_directory, 'source.mp4')
-        args = ['youtube-dl', '-f', 'bestvideo[height<=480]+bestaudio/best[height<=480]', video_page_url, '-o', path]
+        args = ['youtube-dl', '-f', 'bestvideo[height<=480]+bestaudio/best[height<=480]',
+                video_page_url, '-o', path]
         retcode = subprocess.call(args)
         if retcode > 0:
             raise MediaGrabberError("Video downloading failed")
@@ -47,10 +48,19 @@ class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
         frames_dir = os.path.dirname(video_file_path)
         print('Frames directory: ' + frames_dir)
         start = datetime.datetime.now()
-        # extract_frames(video_file_path, frames_dir)
+
+
+        # 0. extract_frames(video_file_path, frames_dir)
         frames = filter_frames(retrieve_frames(video_file_path))
         save_frames(frames, os.path.dirname(video_file_path))
-        print('Duration for ' + str(len(frames)) + ' frames retrieving:')
+        
+        #ffmpeg -i yosemiteA.mp4 -vf  "select=gt(scene\,0.5), scale=640:360" -vsync vfr ffmpeg-%03d.png
+        # Works 8 seconds: time ffmpeg -i source.mp4 -f image2 -vf "select=eq(pict_type\,PICT_TYPE_I)"  -vsync vfr yi%03d.png
+        # Test: time ffmpeg -i source.mp4 -f image2 -vf "select=gt(scene\,0.5)"  -vsync vfr yi%03d.png
+        # args = ['ffmpeg', '-i', video_file_path, '-vf', 'select=gt(scene\,0.5)', '-vsync', 'vfr', 'ffmpeg-%03d.png']
+        # retcode = subprocess.call(args)
+
+        print('Duration for frames retrieving:')
         print(datetime.datetime.now() - start)
         return []
 
@@ -79,13 +89,22 @@ def get_image_difference(image_1, image_2):
 
 def retrieve_frames(video_file_path) -> List:
     capture = cv2.VideoCapture(video_file_path)  # open the video using OpenCV
+    fps = round(capture.get(cv2.CAP_PROP_FPS))
     imgs: List = []
     success, img = capture.read()
+
+    i = 0
     while success:
-        imgs.append(img)
+        if i % fps == 0:
+            imgs.append(img)
+
         success, img = capture.read()
+        i += 1
+
+    capture.release()
 
     return imgs
+
 
 def filter_frames(frames: List):
     filtered_frames = []
@@ -96,76 +115,22 @@ def filter_frames(frames: List):
         else:
             diff = get_image_difference(current_frame, frame)
             # print('Images difference is ' + str(diff))
-            current_frame = frame
             if diff >= 0.5:
                 filtered_frames.append(frame)
+            current_frame = frame
 
     return filtered_frames
+
 
 def save_frames(frames: List, path: str) -> None:
     for i, frame in enumerate(frames):
         save_path = os.path.join(path, "{:010d}.jpg".format(i))
-        cv2.imwrite(save_path, image)
-
-
-def extract_frames(video_path, frames_dir):
-    capture = cv2.VideoCapture(video_path)  # open the video using OpenCV
-    if end < 0:  # if end isn't specified assume the end of the video
-        end = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-
-    capture.set(1, start)  # set the starting frame of the capture
-    frame = start  # keep track of which frame we are up to, starting from start
-    # a safety counter to ensure we don't enter an infinite while loop (hopefully we won't need it)
-    while_safety = 0
-    saved_count = 0  # a count of how many frames we have saved
-
-    current_image = None
-
-    while frame < end:  # lets loop through the frames until the end
-
-        _, image = capture.read()  # read an image from the capture
-
-        if while_safety > 500:  # break the while if our safety maxs out at 500
-            break
-
-        # sometimes OpenCV reads None's during a video, in which case we want to just skip
-        if image is None:  # if we get a bad return flag or the image we read is None, lets not save
-            # add 1 to our while safety, since we skip before incrementing our frame variable
-            while_safety += 1
-            continue  # skip
-
-        if current_image is None:
-            current_image = image
-        else:
-            diff = get_image_difference(current_image, image)
-            # print('Images difference is ' + str(diff))
-            current_image = image
-            if diff < 0.5:
-                continue
-
-        if frame % every == 0:  # if this is a frame we want to write out based on the 'every' argument
-            while_safety = 0  # reset the safety count
-            # create the save path
-            save_path = os.path.join(frames_dir, "{:010d}.jpg".format(frame))
-            print('save path: ' + save_path)
-            # if it doesn't exist or we want to overwrite anyways
-            if not os.path.exists(save_path) or overwrite:
-                # save the extracted image
-                saved = cv2.imwrite(save_path, image)
-                if not saved:
-                    print("Can not write to [" + save_path + "]")
-                saved_count += 1  # increment our counter by one
-
-        frame += 1  # increment our frame count
-
-    capture.release()  # after the while has finished close the capture
-
-    return saved_count  # and return the count of the images we saved
+        cv2.imwrite(save_path, frame)
 
 
 # url = 'https://abcnews.go.com/Technology/video/garmin-outage-affects-millions-72012069'
-url = 'https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309'
-# url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5e594b0eae0c8'
+# url = 'https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309'
+url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5e594b0eae0c8'
 
 f = OpencvVideoFramesRetriever(os.path.realpath('workdir'))
 frames = f.get_frames(url)
