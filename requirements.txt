@@ -1,2 +1,2 @@
-youtube-dl==2020.7.28
 injector==0.18.3
+boto3==1.14.45

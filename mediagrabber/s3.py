@@ -1,8 +1,7 @@
 import boto3
-from botocore.exceptions import NoCredentialsError
 from mediagrabber import StorageInterface
-from urllib.parse import urlparse
 from typing import Optional
+import io
 
 
 class S3Storage(StorageInterface):
@@ -25,5 +24,6 @@ class S3Storage(StorageInterface):
 
     def save(self, data: bytes, key: str) -> str:
         client = self.get_client()
-        client.upload_fileobj(data, self.bucket, key, ExtraArgs={'ACL':'public-read'})
+        client.upload_fileobj(io.BytesIO(data), self.bucket, key,
+                              ExtraArgs={'ACL': 'public-read'})
         return f'https://{self.bucket}.s3.amazonaws.com/{key}'
