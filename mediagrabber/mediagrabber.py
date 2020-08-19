@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List
+from typing import List
 from injector import inject
 from io import BytesIO
+import hashlib
+
 
 class MediaGrabberError(Exception):
     """
@@ -32,8 +34,9 @@ class MediaGrabber(ABC):
         print(f"Start URL processing: {url}")
         frames = self.video_frames_retriever.get_frames(url)
         frame_urls: List[str] = []
+        hash = hashlib.md5(url.encode('utf-8')).hexdigest()
         for i, content in enumerate(frames):
-            name = f"{url}-{i}"
+            name = f"{hash}-{i}.jpg"
             frame_url = self.storage.save(content, name)
             frame_urls.append(frame_url)
 
