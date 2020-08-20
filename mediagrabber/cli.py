@@ -11,8 +11,8 @@ storage = S3Storage(aws_access_key_id, aws_secret_access_key, region, bucket)
 framer = OpencvVideoFramesRetriever('/tmp')
 mg = MediaGrabber(framer, storage)
 
-url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5ec22341819b1'
-urls = mg.grab(url)
+# url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5ec22341819b1'
+# urls = mg.grab(url)
 
-for url in urls:
-    print(url)
+# for url in urls:
+#     print(url)
