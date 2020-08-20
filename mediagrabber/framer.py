@@ -10,14 +10,14 @@
 
 
 from typing import List
-from mediagrabber import VideoFramesRetrieverInterface, MediaGrabberError
+from mediagrabber import FramerInterface, MediaGrabberError
 import subprocess
 import os
 import cv2
 import hashlib
 
 
-class OpencvVideoFramesRetriever(VideoFramesRetrieverInterface):
+class OpencvVideoFramesRetriever(FramerInterface):
     workdir: str
 
     def __init__(self, workdir: str):

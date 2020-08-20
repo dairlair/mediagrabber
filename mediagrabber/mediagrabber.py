@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
 from injector import inject
-from io import BytesIO
 import hashlib
 
 
@@ -18,7 +17,7 @@ class StorageInterface(ABC):
         raise NotImplementedError
 
 
-class VideoFramesRetrieverInterface(ABC):
+class FramerInterface(ABC):
     @abstractmethod
     def get_frames(self, video_page_url: str) -> List[bytes]:
         raise NotImplementedError
@@ -26,8 +25,8 @@ class VideoFramesRetrieverInterface(ABC):
 
 class MediaGrabber(ABC):
     @inject
-    def __init__(self, video_frames_retriever: VideoFramesRetrieverInterface, storage: StorageInterface):
-        self.video_frames_retriever = video_frames_retriever
+    def __init__(self, framer: FramerInterface, storage: StorageInterface):
+        self.video_frames_retriever = framer
         self.storage = storage
 
     def grab(self, url: str) -> List[str]:
