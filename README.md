@@ -11,7 +11,7 @@ MediaGrabber uses queue to receive a new new URLs for processing and results pub
 ## Run with darp locally
 
 ```
-dapr run --dapr-http-port 3500 -app-id mediagrabber --app-port 5000 python mediagrabber/app.py
+dapr run --port 3500 --app-id mediagrabber --app-port 5000 python mediagrabber/app.py
 dapr publish --topic "VideoPageFound" --data '{"url": "https://rt.pornhub.com/view_video.php?viewkey=ph5b84c16b3e9a1"}'
 # or
 http POST http://localhost:3500/v1.0/publish/pubsub/VideoPageFound '{"url": "https://rt.pornhub.com/view_video.php?viewkey=ph5b84c16b3e9a1"}'
