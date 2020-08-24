@@ -59,8 +59,12 @@ def video_page_found():
 @app.route('/video-grabbed', methods=['POST'])
 def video_grabbed():
     print(f'Video grabbed: {request.json}', flush=True)
+    data = json.loads(request.json['data'])
+    print('Data:', flush=True)
+    print(data['frames'], flush=True)
 
-    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+    return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+    # return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 app.run()
