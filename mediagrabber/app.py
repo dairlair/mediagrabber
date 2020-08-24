@@ -40,10 +40,15 @@ def subscribe():
 @app.route('/video-page-found', methods=['POST'])
 def video_page_found():
     url = request.json['data']['url']
-    frames = mg.grab(url)
-    payload = json.dumps({'url': url, 'frames': frames})
-    url = f'{dapr_url}/publish/{dapr_pubsub_name}/VideoGrabbed'
-    requests.post(url, json=payload)
+    images = mg.grab(url)
+    payload = {'url': url, 'images': images}
+    dapr_pub_url = f'{dapr_url}/publish/{dapr_pubsub_name}/Recognize'
+    response = requests.post(dapr_pub_url, json=payload)
+
+    if response.ok:
+        print('Result published successfully: ' + dapr_pub_url, flush=True)
+    else:
+        print('Result publishing failed', flush=True)
 
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 

@@ -15,6 +15,8 @@ dapr run --port 3500 --app-id mediagrabber --app-port 5000 python mediagrabber/a
 dapr publish --pubsub "pubsub" --topic "VideoPageFound" --data '{"url": "https://rt.pornhub.com/view_video.php?viewkey=ph5b84c16b3e9a1"}'
 # or another video
 dapr publish --pubsub "pubsub" --topic "VideoPageFound" --data '{"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}'
+# or video with Angelina Jolie
+dapr publish --pubsub "pubsub" --topic "VideoPageFound" --data '{"url": "https://www.youtube.com/watch?v=Z9nqgDpFYPQ"}'
 # or
 http POST http://localhost:3500/v1.0/publish/pubsub/VideoPageFound '{"url": "https://rt.pornhub.com/view_video.php?viewkey=ph5b84c16b3e9a1"}'
 ```
