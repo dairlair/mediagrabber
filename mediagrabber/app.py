@@ -32,11 +32,6 @@ def subscribe():
             'pubsubName': 'pubsub',
             'topic': 'VideoPageFound',
             'route': 'video-page-found'
-        },
-        {
-            'pubsubName': 'pubsub',
-            'topic': 'VideoGrabbed',
-            'route': 'video-grabbed'
         }
     ]
     return jsonify(subscriptions)
@@ -44,27 +39,13 @@ def subscribe():
 
 @app.route('/video-page-found', methods=['POST'])
 def video_page_found():
-    # if True:
-    #     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-
     url = request.json['data']['url']
     frames = mg.grab(url)
     payload = json.dumps({'url': url, 'frames': frames})
     url = f'{dapr_url}/publish/{dapr_pubsub_name}/VideoGrabbed'
-    response = requests.post(url, json=payload)
-    print(response)
+    requests.post(url, json=payload)
+
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-
-
-@app.route('/video-grabbed', methods=['POST'])
-def video_grabbed():
-    print(f'Video grabbed: {request.json}', flush=True)
-    data = json.loads(request.json['data'])
-    print('Data:', flush=True)
-    print(data['frames'], flush=True)
-
-    return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-    # return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 app.run()
