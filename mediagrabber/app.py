@@ -43,12 +43,15 @@ def subscribe():
 
 
 @app.route('/video-page-found', methods=['POST'])
-def video_page_url():
-    # print(f'A: {request.json}', flush=True)
+def video_page_found():
+    # if True:
+    #     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
     url = request.json['data']['url']
     frames = mg.grab(url)
+    payload = json.dumps({'url': url, 'frames': frames})
     url = f'{dapr_url}/publish/{dapr_pubsub_name}/VideoGrabbed'
-    response = requests.post(url, json=json.dumps(frames))
+    response = requests.post(url, json=payload)
     print(response)
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
