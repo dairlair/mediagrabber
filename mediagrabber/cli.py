@@ -12,7 +12,9 @@ framer = OpencvVideoFramesRetriever('/tmp')
 mg = MediaGrabber(framer, storage)
 
 # url = 'https://rt.pornhub.com/view_video.php?viewkey=ph5ec22341819b1'
-# urls = mg.grab(url)
+url = "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"
+urls = mg.grab(url)
 
-# for url in urls:
-#     print(url)
+print('URLs:')
+for url in urls:
+    print(url)

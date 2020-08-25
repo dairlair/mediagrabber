@@ -15,6 +15,7 @@ import subprocess
 import os
 import cv2
 import hashlib
+import glob
 
 
 class OpencvVideoFramesRetriever(FramerInterface):
@@ -35,13 +36,22 @@ class OpencvVideoFramesRetriever(FramerInterface):
         Returns the full path to the downloaded video file.
         """
         video_directory = self.create_video_directory(video_page_url)
-        path = os.path.join(video_directory, 'source.mp4')
+        path = os.path.join(video_directory, 'source.%(ext)s')
         args = ['youtube-dl', '-f',
                 'bestvideo[height<=480]+bestaudio/best[height<=480]',
                 video_page_url, '-o', path]
-        retcode = subprocess.call(args)
-        if retcode > 0:
+
+        try:
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError:
+            print('Error:' + str(output))
             raise MediaGrabberError("Video downloading failed")
+
+        # Try to find downloadded file
+        mask = os.path.join(video_directory, 'source.*')
+        path = next(iter(glob.glob(mask)), None)
+        if not path or not os.path.exists(path):
+            raise MediaGrabberError("Video file not found")
 
         return path
 

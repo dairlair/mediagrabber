@@ -30,7 +30,6 @@ class MediaGrabber(ABC):
         self.storage = storage
 
     def grab(self, url: str) -> List[str]:
-        print(f"Start URL processing: {url}")
         frames = self.video_frames_retriever.get_frames(url)
         frame_urls: List[str] = []
         hash = hashlib.md5(url.encode('utf-8')).hexdigest()
