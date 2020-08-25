@@ -11,7 +11,7 @@ MediaGrabber uses queue to receive a new new URLs for processing and results pub
 ## Run with darp locally
 
 ```
-dapr run --port 3500 --app-id mediagrabber --app-port 5000 python mediagrabber/app.py
+dapr run --port 3501 --app-id mediagrabber --app-port 5000 python mediagrabber/app.py
 dapr publish --pubsub "pubsub" --topic "VideoPageFound" --data '{"url": "https://rt.pornhub.com/view_video.php?viewkey=ph5b84c16b3e9a1"}'
 # or another video
 dapr publish --pubsub "pubsub" --topic "VideoPageFound" --data '{"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}'
