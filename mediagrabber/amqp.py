@@ -1,5 +1,6 @@
 # RabbitMQ based application for MediaGrabber
 import pika
+import logging
 from injector import Injector
 from mediagrabber.core import MediaGrabber
 from dependencies import configure
@@ -13,6 +14,9 @@ def grab(service: MediaGrabber, payload: dict) -> dict:
 
 
 if __name__ == "__main__":
+    # Set desired logging level
+    logging.basicConfig(level=Config.log_level())
+
     # Dependency Injection setup
     injector = Injector([configure])
 

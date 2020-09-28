@@ -16,6 +16,7 @@ import os
 import cv2
 import hashlib
 import glob
+import logging
 
 
 class OpencvVideoFramesRetriever(FramerInterface):
@@ -25,9 +26,10 @@ class OpencvVideoFramesRetriever(FramerInterface):
         self.workdir = workdir
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
-        video_file_path = self.download_video(video_page_url)
-        frames = filter_frames(retrieve_frames(video_file_path))
-        return save_frames(frames, os.path.dirname(video_file_path))
+        path = self.download_video(video_page_url)
+        logging.info(f'Video downloaded at {path}')
+        frames = filter_frames(retrieve_frames(path))
+        return save_frames(frames, os.path.dirname(path))
 
     def download_video(self, video_page_url: str) -> str:
         """
@@ -41,10 +43,11 @@ class OpencvVideoFramesRetriever(FramerInterface):
                 'bestvideo[height<=480]+bestaudio/best[height<=480]',
                 video_page_url, '-o', path]
 
+        output = ''
         try:
-            subprocess.check_output(args, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            print('Error:' + str(e))
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError:
+            print('Error:' + str(output))
             raise MediaGrabberError("Video downloading failed")
 
         # Try to find downloadded file
@@ -57,14 +60,19 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
     def create_video_directory(self, video_page_url: str) -> str:
         hash = hashlib.md5(video_page_url.encode('utf-8')).hexdigest()
-        video_directory = os.path.join(self.workdir, hash)
+        directory = os.path.join(self.workdir, hash)
 
         try:
-            os.mkdir(video_directory)
+            os.mkdir(directory)
         except FileExistsError:
             pass
 
-        return video_directory
+        if os.access(directory, os.W_OK) is False:
+            raise MediaGrabberError("Video directory is not writable")
+
+        logging.debug("Video directory created", {'directory': directory})
+
+        return directory
 
 
 def get_image_difference(image_1, image_2):

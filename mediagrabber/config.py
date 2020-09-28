@@ -1,4 +1,5 @@
 import os
+import logging
 
 
 class Config():
@@ -6,6 +7,10 @@ class Config():
     @staticmethod
     def core_workdir() -> str:
         return os.environ.get('CORE_WORKDIR') or 'workdir'
+
+    @staticmethod
+    def log_level() -> str:
+        return os.environ.get('LOG_LEVEL') or logging.WARN
 
     # AMQP settings
     @staticmethod
