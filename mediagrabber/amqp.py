@@ -8,11 +8,8 @@ from mediagrabber.consumer import Consumer
 
 
 def grab(service: MediaGrabber, payload: dict) -> dict:
-    print("Message received")
-    print(payload)
-    urls = service.grab(payload.url)
-    payload['urls'] = urls
-    return payload
+    urls = service.grab(payload['url'])
+    return {'urls': urls}
 
 
 if __name__ == "__main__":

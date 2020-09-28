@@ -1,5 +1,8 @@
 # MediaGrabber
-The cloud native service for media grabbing
+The cloud native service for media grabbing. The application listens the specified queue with AMQP and expects messages in the formt:
+```json
+{"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
+```
 
 ## How it works
 MediaGrabber is created to help us analyze high video traffic flow from dozens of services.
