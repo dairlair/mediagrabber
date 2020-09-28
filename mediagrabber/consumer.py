@@ -8,17 +8,17 @@ class Consumer(object):
         self.service = service
         self.channel = channel
         self.callback = callback
-        self.channel.queue_declare(queue=queue_in, durable=True)
-        self.channel.basic_consume(queue=queue_in, on_message_callback=self.on_message)
-        self.channel.queue_declare(queue=queue_out, durable=True)
         self.queue_out = queue_out
+        self.channel.queue_declare(queue=queue_in, durable=True)
+        self.channel.queue_declare(queue=queue_out, durable=True)
+        self.channel.basic_consume(queue=queue_in, on_message_callback=self.on_message)       
 
     def on_message(self, ch: BlockingChannel, method, properties, body: str):
         payload = json.loads(body)
         response = self.callback(self.service, payload)
         if response is None:
             payload = {**payload, 'success': False}
-        else:    
+        else:
             payload = {**payload, **response, 'success': True}
         self.channel.basic_publish(exchange="", routing_key=self.queue_out, body=json.dumps(payload))
         ch.basic_ack(delivery_tag=method.delivery_tag)

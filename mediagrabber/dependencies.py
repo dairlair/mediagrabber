@@ -11,24 +11,28 @@ import logging
 
 
 def configure(binder: Binder) -> None:
-    binder.bind(FramerInterface, to=OpencvVideoFramesRetriever("workdir"), scope=singleton)
+    binder.bind(FramerInterface, to=create_framer, scope=singleton)
     binder.bind(StorageInterface, to=create_storage, scope=singleton)
     binder.bind(MediaGrabber, to=MediaGrabber, scope=singleton)
-    binder.bind(BlockingConnection, create_blocking_connection, scope=singleton)
+    binder.bind(BlockingConnection, create_amqp_connection, scope=singleton)
 
 
-def create_blocking_connection() -> BlockingConnection:
+def create_framer() -> FramerInterface:
+    return OpencvVideoFramesRetriever(Config.core_workdir())
+
+
+def create_amqp_connection() -> BlockingConnection:
     try:
         dsn: str = Config.amqp_url()
-        return BlockingConnection(parameters=URLParameters(dsn))    
+        return BlockingConnection(parameters=URLParameters(dsn))
     except AMQPConnectionError:
         logging.error("Couldn't connect to the AMQP broker. Please, check the AMQP is available with the specified URL: [%s]" % dsn)
         sys.exit(2)
 
 
 def create_storage() -> StorageInterface:
-    aws_access_key_id = 'AKIAIKOOWOEBPSHB5JZQ'
-    aws_secret_access_key = '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'
-    region = 'us-east-1'
-    bucket = 'mediagrabber-dev'
+    aws_access_key_id = Config.aws_access_key_id()
+    aws_secret_access_key = Config.aws_secret_access_key()
+    region = Config.aws_region()
+    bucket = Config.aws_bucket()
     return S3Storage(aws_access_key_id, aws_secret_access_key, region, bucket)

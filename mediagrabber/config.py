@@ -2,6 +2,11 @@ import os
 
 
 class Config():
+    # Core settings
+    @staticmethod
+    def core_workdir() -> str:
+        return os.environ.get('CORE_WORKDIR') or 'workdir'
+
     # AMQP settings
     @staticmethod
     def amqp_url() -> str:
@@ -9,8 +14,32 @@ class Config():
 
     @staticmethod
     def queue_in() -> str:
-        return os.environ.get('IN') or 'mediagrabber.in'
+        return os.environ.get('AMQP_IN') or 'mediagrabber.in'
 
     @staticmethod
     def queue_out() -> str:
-        return os.environ.get('OUT') or 'mediagrabber.out'
+        return os.environ.get('AMQP_OUT') or 'mediagrabber.out'
+
+    # AWS Settings
+    @staticmethod
+    def aws_access_key_id() -> str:
+        return Config.require('AWS_ACCESS_KEY_ID')
+
+    @staticmethod
+    def aws_secret_access_key() -> str:
+        return Config.require('AWS_SECRET_ACCESS_KEY')
+
+    @staticmethod
+    def aws_region() -> str:
+        return Config.require('AWS_REGION')
+
+    @staticmethod
+    def aws_bucket() -> str:
+        return Config.require('AWS_BUCKET')
+
+    @staticmethod
+    def require(variable) -> str:
+        value = os.environ.get(variable, None)
+        if value is None:
+            raise EnvironmentError("%s Must be specified" % variable)
+        return value
