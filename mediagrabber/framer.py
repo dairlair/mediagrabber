@@ -10,7 +10,7 @@
 
 
 from typing import List
-from mediagrabber import FramerInterface, MediaGrabberError
+from mediagrabber.core import FramerInterface, MediaGrabberError
 import subprocess
 import os
 import cv2

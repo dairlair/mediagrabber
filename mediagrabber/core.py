@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
-from injector import inject
 import hashlib
+from injector import inject
 
 
 class MediaGrabberError(Exception):

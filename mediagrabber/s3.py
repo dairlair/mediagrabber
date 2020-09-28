@@ -1,7 +1,7 @@
 import boto3
-from mediagrabber import StorageInterface
 from typing import Optional
 import io
+from mediagrabber.core import StorageInterface
 
 
 class S3Storage(StorageInterface):
