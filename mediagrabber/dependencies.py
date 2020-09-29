@@ -18,7 +18,7 @@ def configure(binder: Binder) -> None:
 
 
 def create_framer() -> FramerInterface:
-    return OpencvVideoFramesRetriever(Config.core_workdir())
+    return OpencvVideoFramesRetriever(Config.workdir())
 
 
 def create_amqp_connection() -> BlockingConnection:
