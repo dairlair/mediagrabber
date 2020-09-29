@@ -1,0 +1,5 @@
+injector==0.18.3
+boto3==1.14.45
+requests==2.24.0
+opencv_python==4.4.0.42
+pika==1.1.0
