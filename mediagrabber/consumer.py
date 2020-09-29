@@ -1,6 +1,7 @@
 import json
 from pika.adapters.blocking_connection import BlockingChannel
 from mediagrabber.core import MediaGrabber
+import logging
 
 
 class Consumer(object):
@@ -14,6 +15,7 @@ class Consumer(object):
         self.channel.basic_consume(queue=queue_in, on_message_callback=self.on_message)       
 
     def on_message(self, ch: BlockingChannel, method, properties, body: str):
+        logging.info(f'Incoming message received: {body}')
         payload = json.loads(body)
         response = self.callback(self.service, payload)
         if response is None:

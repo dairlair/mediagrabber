@@ -15,6 +15,7 @@ RUN pip install -r requirements.txt
 ADD . /mediagrabber
 RUN pip install -e .
 
+ENV LOG_LEVEL=WARNING
 ENV CORE_WORKDIR=/tmp
 ENV AMQP_URL=amqp://guest:guest@host.docker.internal:5672/%2F
 ENV AMQP_IN=mediagrabber.in
