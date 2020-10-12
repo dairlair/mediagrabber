@@ -23,6 +23,5 @@ class Consumer(object):
         else:
             payload = {**payload, **response, 'success': True}
         body = json.dumps(payload)
-        logging.info(f'Outcoming message prepared: {body}')
         self.channel.basic_publish(exchange="", routing_key=self.queue_out, body=body)
         ch.basic_ack(delivery_tag=method.delivery_tag)

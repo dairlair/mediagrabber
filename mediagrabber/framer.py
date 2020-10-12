@@ -46,9 +46,8 @@ class OpencvVideoFramesRetriever(FramerInterface):
         output = ''
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             print('Error:' + str(output))
-            print(e)
             raise MediaGrabberError("Video downloading failed")
 
         # Try to find downloadded file
