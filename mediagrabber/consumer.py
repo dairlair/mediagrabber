@@ -22,5 +22,6 @@ class Consumer(object):
             payload = {**payload, 'success': False}
         else:
             payload = {**payload, **response, 'success': True}
-        self.channel.basic_publish(exchange="", routing_key=self.queue_out, body=json.dumps(payload))
+        body = json.dumps(payload)
+        self.channel.basic_publish(exchange="", routing_key=self.queue_out, body=body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
