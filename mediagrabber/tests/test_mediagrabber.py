@@ -5,8 +5,8 @@ from mediagrabber.s3 import S3Storage
 
 def test_constructor():
     # When
-    framer: FramerInterface = OpencvVideoFramesRetriever('')
-    storage: StorageInterface = S3Storage('', '', '', '')
+    framer: FramerInterface = OpencvVideoFramesRetriever("")
+    storage: StorageInterface = S3Storage("", "", "", "")
     mg: MediaGrabber = MediaGrabber(framer, storage)
 
     # Then

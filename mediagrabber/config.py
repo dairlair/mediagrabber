@@ -1,45 +1,46 @@
 import os
 
 
-class Config():
+class Config:
     # Core settings
     @staticmethod
     def workdir() -> str:
-        return os.environ.get('WORKDIR') or 'workdir'
+        return os.environ.get("WORKDIR", "workdir")
 
     @staticmethod
     def log_level() -> str:
-        return os.environ.get('LOG_LEVEL') or 'WARNING'
+        return os.environ.get("LOG_LEVEL"), "WARNING"
 
     # AMQP settings
     @staticmethod
     def amqp_url() -> str:
-        return os.environ.get('AMQP_URL') or 'amqp://ia:ia@host.docker.internal:5672/iavhost'
+        default = "amqp://ia:ia@host.docker.internal:5672/%2f"
+        return os.environ.get("AMQP_URL", default)
 
     @staticmethod
     def queue_in() -> str:
-        return os.environ.get('AMQP_IN') or 'mediagrabber.in'
+        return os.environ.get("AMQP_IN", "mediagrabber.in")
 
     @staticmethod
     def queue_out() -> str:
-        return os.environ.get('AMQP_OUT') or 'mediagrabber.out'
+        return os.environ.get("AMQP_OUT", "mediagrabber.out")
 
     # AWS Settings
     @staticmethod
     def aws_access_key_id() -> str:
-        return Config.require('AWS_ACCESS_KEY_ID')
+        return Config.require("AWS_ACCESS_KEY_ID")
 
     @staticmethod
     def aws_secret_access_key() -> str:
-        return Config.require('AWS_SECRET_ACCESS_KEY')
+        return Config.require("AWS_SECRET_ACCESS_KEY")
 
     @staticmethod
     def aws_region() -> str:
-        return Config.require('AWS_REGION')
+        return Config.require("AWS_REGION")
 
     @staticmethod
     def aws_bucket() -> str:
-        return Config.require('AWS_BUCKET')
+        return Config.require("AWS_BUCKET")
 
     @staticmethod
     def require(variable) -> str:

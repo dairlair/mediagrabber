@@ -6,8 +6,9 @@ from injector import inject
 
 class MediaGrabberError(Exception):
     """
-        Just a general error for MediaGrabber
+    Just a general error for MediaGrabber
     """
+
     pass
 
 
@@ -32,7 +33,7 @@ class MediaGrabber(ABC):
     def grab(self, url: str) -> List[str]:
         frames = self.video_frames_retriever.get_frames(url)
         frame_urls: List[str] = []
-        hash = hashlib.md5(url.encode('utf-8')).hexdigest()
+        hash = hashlib.md5(url.encode("utf-8")).hexdigest()
         for i, content in enumerate(frames):
             name = f"{hash}-{i}.jpg"
             frame_url = self.storage.save(content, name)
