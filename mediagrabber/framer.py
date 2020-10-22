@@ -19,6 +19,22 @@ import glob
 import logging
 
 
+class DownloadVideoResponse(object):
+    def __init__(
+        self,
+        return_code: int,
+        stdout: str,
+        stderr: str,
+        file: str,
+        duration: str,
+    ):
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.file = file
+        self.duration = duration
+
+
 class OpencvVideoFramesRetriever(FramerInterface):
     workdir: str
 
