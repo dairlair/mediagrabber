@@ -27,7 +27,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
         path = self.download_video(video_page_url)
-        logging.info(f'Video downloaded at {path}')
+        logging.info(f"Video downloaded at {path}")
         frames = filter_frames(retrieve_frames(path))
         return save_frames(frames, os.path.dirname(path))
 
@@ -38,20 +38,25 @@ class OpencvVideoFramesRetriever(FramerInterface):
         Returns the full path to the downloaded video file.
         """
         video_directory = self.create_video_directory(video_page_url)
-        path = os.path.join(video_directory, 'source.%(ext)s')
-        args = ['youtube-dl', '-f',
-                'bestvideo[height<=480]+bestaudio/best[height<=480]',
-                video_page_url, '-o', path]
+        path = os.path.join(video_directory, "source.%(ext)s")
+        args = [
+            "youtube-dl",
+            "-f",
+            "bestvideo[height<=480]+bestaudio/best[height<=480]",
+            video_page_url,
+            "-o",
+            path,
+        ]
 
-        output = ''
+        output = ""
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
-            print('Error:' + str(output))
+            print("Error:" + str(output))
             raise MediaGrabberError("Video downloading failed")
 
         # Try to find downloadded file
-        mask = os.path.join(video_directory, 'source.*')
+        mask = os.path.join(video_directory, "source.*")
         path = next(iter(glob.glob(mask)), None)
         if not path or not os.path.exists(path):
             raise MediaGrabberError("Video file not found")
@@ -59,7 +64,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         return path
 
     def create_video_directory(self, video_page_url: str) -> str:
-        hash = hashlib.md5(video_page_url.encode('utf-8')).hexdigest()
+        hash = hashlib.md5(video_page_url.encode("utf-8")).hexdigest()
         directory = os.path.join(self.workdir, hash)
 
         try:
@@ -70,7 +75,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         if os.access(directory, os.W_OK) is False:
             raise MediaGrabberError("Video directory is not writable")
 
-        logging.debug("Video directory created", {'directory': directory})
+        logging.debug("Video directory created", {"directory": directory})
 
         return directory
 
@@ -80,9 +85,11 @@ def get_image_difference(image_1, image_2):
     second_image_hist = cv2.calcHist([image_2], [0], None, [256], [0, 256])
 
     img_hist_diff = cv2.compareHist(
-        first_image_hist, second_image_hist, cv2.HISTCMP_BHATTACHARYYA)
+        first_image_hist, second_image_hist, cv2.HISTCMP_BHATTACHARYYA
+    )
     img_template_probability_match = cv2.matchTemplate(
-        first_image_hist, second_image_hist, cv2.TM_CCOEFF_NORMED)[0][0]
+        first_image_hist, second_image_hist, cv2.TM_CCOEFF_NORMED
+    )[0][0]
     img_template_diff = 1 - img_template_probability_match
 
     # taking only 10% of histogram diff,
