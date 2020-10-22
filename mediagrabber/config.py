@@ -40,7 +40,7 @@ class Config:
 
     @staticmethod
     def aws_region() -> str:
-        return Config.require("AWS_REGION")
+        return Config.require("AWS_DEFAULT_REGION")
 
     @staticmethod
     def aws_bucket() -> str:
