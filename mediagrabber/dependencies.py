@@ -26,10 +26,7 @@ def create_amqp_connection() -> BlockingConnection:
         dsn: str = Config.amqp_url()
         return BlockingConnection(parameters=URLParameters(dsn))
     except AMQPConnectionError:
-        logging.error(
-            "Couldn't connect to the AMQP broker. Please, check the AMQP is available with the specified URL: [%s]"
-            % dsn
-        )
+        logging.error("Couldn't connect to the AMQP broker at: [%s]" % dsn)
         sys.exit(2)
 
 
