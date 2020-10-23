@@ -3,25 +3,33 @@ from mediagrabber.core import MediaGrabber, FramerInterface, StorageInterface
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
 from pika.exceptions import AMQPConnectionError
-from mediagrabber.framer import OpencvVideoFramesRetriever
+from mediagrabber.framer import (
+    OpencvVideoFramesRetriever,
+    VideoDownloaderInterface,
+)
 from mediagrabber.s3 import S3Storage
-
+from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
 import sys
 import logging
 
 
 def configure(binder: Binder) -> None:
-    binder.bind(FramerInterface, to=create_framer, scope=singleton)
-    binder.bind(StorageInterface, to=create_storage, scope=singleton)
+    binder.bind(VideoDownloaderInterface, to=downloader, scope=singleton)
+    binder.bind(FramerInterface, to=framer, scope=singleton)
+    binder.bind(StorageInterface, to=storage, scope=singleton)
     binder.bind(MediaGrabber, to=MediaGrabber, scope=singleton)
-    binder.bind(BlockingConnection, create_amqp_connection, scope=singleton)
+    binder.bind(BlockingConnection, amqp, scope=singleton)
 
 
-def create_framer() -> FramerInterface:
+def framer() -> FramerInterface:
     return OpencvVideoFramesRetriever(Config.workdir())
 
 
-def create_amqp_connection() -> BlockingConnection:
+def downloader() -> VideoDownloaderInterface:
+    return YoutubedlVideoDownloader()
+
+
+def amqp() -> BlockingConnection:
     try:
         dsn: str = Config.amqp_url()
         return BlockingConnection(parameters=URLParameters(dsn))
@@ -30,7 +38,7 @@ def create_amqp_connection() -> BlockingConnection:
         sys.exit(2)
 
 
-def create_storage() -> StorageInterface:
+def storage() -> StorageInterface:
     aws_access_key_id = Config.aws_access_key_id()
     aws_secret_access_key = Config.aws_secret_access_key()
     region = Config.aws_region()

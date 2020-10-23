@@ -10,105 +10,45 @@
 
 
 from typing import List
-from mediagrabber.core import FramerInterface, MediaGrabberError
-import subprocess
+from abc import ABC, abstractmethod
+from mediagrabber.core import FramerInterface
 import os
 import cv2
-import hashlib
-import glob
 import logging
+from injector import inject
 
 
-# @TODO Move video downloader to another dependency
-class DownloadVideoResponse(object):
-    def __init__(
-        self,
-        return_code: int,
-        stdout: str,
-        stderr: str,
-        path: str,
-        duration: str,
-    ):
-        self.return_code = return_code
-        self.stdout = stdout
-        self.stderr = stderr
+class VideoDownloadedResponse(object):
+    def __init__(self, code: int, output: str, path: str, duration: str):
+        self.code = code
+        self.output = output
         self.path = path
         self.duration = duration
 
 
+class VideoDownloaderInterface(ABC):
+    @abstractmethod
+    def download(
+        self, workdir: str, video_page_url: str
+    ) -> VideoDownloadedResponse:
+        raise NotImplementedError
+
+
 class OpencvVideoFramesRetriever(FramerInterface):
     workdir: str
+    downloader: VideoDownloaderInterface
 
-    def __init__(self, workdir: str):
+    @inject
+    def __init__(self, workdir: str, downloader: VideoDownloaderInterface):
         self.workdir = workdir
+        self.downloader = downloader
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
-        response = self.download_video(video_page_url)
+        response = self.downloader.download(self.workdir, video_page_url)
         path = response.path
         logging.info(f"Video downloaded at {path}")
         frames = filter_frames(retrieve_frames(path))
         return save_frames(frames, os.path.dirname(path))
-
-    def download_video(self, video_page_url: str) -> DownloadVideoResponse:
-        """
-        Downloads videos from the specified page and stores the file
-        in the `workdirectory`.
-        Returns the full path to the downloaded video file.
-        """
-        video_directory = self.create_video_directory(video_page_url)
-        path = os.path.join(video_directory, "source.%(ext)s")
-        command = [
-            "youtube-dl",
-            "-f",
-            "bestvideo[height<=480]+bestaudio/best[height<=480]",
-            video_page_url,
-            "-o",
-            path,
-        ]
-
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-        )
-
-        (stdout, stderr) = process.communicate()
-
-        # Wait for date to terminate. Get return returncode ##
-        return_code = process.wait()
-        if return_code != 0:
-            return DownloadVideoResponse(
-                return_code, stdout, stderr, None, None
-            )
-
-        # Try to find downloadded file
-        mask = os.path.join(video_directory, "source.*")
-        path = next(iter(glob.glob(mask)), None)
-        if not path or not os.path.exists(path):
-            raise MediaGrabberError("Video file donwloaded but not found")
-
-        duration = parse_duration(stdout)
-
-        return DownloadVideoResponse(
-            return_code, stdout, stderr, str(path), duration
-        )
-
-    def create_video_directory(self, video_page_url: str) -> str:
-        hash = hashlib.md5(video_page_url.encode("utf-8")).hexdigest()
-        directory = os.path.join(self.workdir, hash)
-
-        try:
-            os.mkdir(directory)
-        except FileExistsError:
-            pass
-
-        if os.access(directory, os.W_OK) is False:
-            raise MediaGrabberError("Video directory is not writable")
-
-        logging.debug("Video directory created", {"directory": directory})
-
-        return directory
 
 
 def get_image_difference(image_1, image_2):
@@ -168,12 +108,3 @@ def save_frames(frames: List, path: str) -> List[bytes]:
             frames_data.append(input.read())
 
     return frames_data
-
-
-def parse_duration(output: str) -> str:
-    """
-    Parses duration from youtube-dl output, like a
-    "[download] 100.0% of 58.68MiB at 188.13KiB/s ETA 00:00\n[download] 100% of 58.68MiB in 05:20\n"
-    and returns duration, e.g: "58.68MiB in 05:20"
-    """
-    return ""
