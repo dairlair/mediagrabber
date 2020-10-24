@@ -8,40 +8,7 @@ import os
 import glob
 import hashlib
 import logging
-import threading
-
-
-class SuperFile(threading.Thread):
-    def __init__(self):
-        super().__init__()
-        self.readpipe, self.writepipe = os.pipe()
-
-    def write(self, data):
-        print("Data received")
-        print(data)
-
-    def fileno(self):
-        # when fileno is called this indicates the subprocess is about to
-        # fork => start thread
-        return self.writepipe
-
-    def finished(self):
-        """If the write-filedescriptor is not closed this thread will
-        prevent the whole program from exiting. You can use this method
-        to clean up after the subprocess has terminated."""
-        os.close(self.writepipe)
-
-    def run(self):
-        inputFile = os.fdopen(self.readpipe)
-
-        while True:
-            line = inputFile.readline()
-
-            if len(line) == 0:
-                #no new data was added
-                break
-
-            print(line)
+import time
 
 
 class YoutubedlVideoDownloader(VideoDownloaderInterface):
@@ -64,17 +31,26 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
             path,
         ]
 
-        f = SuperFile()
-        process = subprocess.Popen(command, stdout=f, stderr=f)
+        started_at = time.time()
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,
+            universal_newlines=True,
+        )
 
-        (stdout, stderr) = process.communicate()
+        output: str = ""
+        for line in process.stdout:
+            logging.info(line)
+            output += line
+
+        process.wait()
 
         # Wait for date to terminate. Get return returncode ##
         return_code = process.wait()
         if return_code != 0:
-            return VideoDownloadedResponse(
-                return_code, stdout, stderr, None, None
-            )
+            return VideoDownloadedResponse(return_code, output, None, None)
 
         # Try to find downloadded file
         mask = os.path.join(video_directory, "source.*")
@@ -82,10 +58,10 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         if not path or not os.path.exists(path):
             raise MediaGrabberError("Video file donwloaded but not found")
 
-        duration = parse_duration(stdout)
+        duration = time() - started_at
 
         return VideoDownloadedResponse(
-            return_code, stdout, stderr, str(path), duration
+            process.returncode, output, str(path), duration
         )
 
     def create_video_directory(self, workdir: str, video_page_url: str) -> str:
@@ -103,12 +79,3 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         logging.debug("Video directory created", {"directory": directory})
 
         return directory
-
-
-def parse_duration(output: str) -> str:
-    """
-    Parses duration from youtube-dl output, like a
-    "[download] 100.0% of 58.68MiB at 188.13KiB/s ETA 00:00\n[download] 100% of 58.68MiB in 05:20\n"
-    and returns duration, e.g: "58.68MiB in 05:20"
-    """
-    return ""

@@ -22,7 +22,7 @@ def configure(binder: Binder) -> None:
 
 
 def framer() -> FramerInterface:
-    return OpencvVideoFramesRetriever(Config.workdir())
+    return OpencvVideoFramesRetriever(Config.workdir(), downloader())
 
 
 def downloader() -> VideoDownloaderInterface:

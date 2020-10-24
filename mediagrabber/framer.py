@@ -38,7 +38,6 @@ class OpencvVideoFramesRetriever(FramerInterface):
     workdir: str
     downloader: VideoDownloaderInterface
 
-    @inject
     def __init__(self, workdir: str, downloader: VideoDownloaderInterface):
         self.workdir = workdir
         self.downloader = downloader
