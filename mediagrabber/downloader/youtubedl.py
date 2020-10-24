@@ -43,6 +43,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         output: str = ""
         for line in process.stdout:
             logging.info(line)
+            print(line)
             output += line
 
         process.wait()
@@ -58,7 +59,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         if not path or not os.path.exists(path):
             raise MediaGrabberError("Video file donwloaded but not found")
 
-        duration = time() - started_at
+        duration = time.time() - started_at
 
         return VideoDownloadedResponse(
             process.returncode, output, str(path), duration
