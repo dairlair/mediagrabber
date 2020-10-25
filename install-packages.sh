@@ -23,6 +23,7 @@ apt-get -y install --no-install-recommends libgl1-mesa-glx libglib2.0-0 ffmpeg w
 wget https://yt-dl.org/downloads/latest/youtube-dl -O /usr/local/bin/youtube-dl
 chmod a+rx /usr/local/bin/youtube-dl
 hash -r
+youtube-dl --version
 
 # Delete cached files we don't need anymore:
 apt-get clean

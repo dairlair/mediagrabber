@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file in the project root
+load_dotenv()
 
 
 class Config:
@@ -9,12 +13,12 @@ class Config:
 
     @staticmethod
     def log_level() -> str:
-        return os.environ.get("LOG_LEVEL"), "WARNING"
+        return os.environ.get("LOG_LEVEL", "WARNING")
 
     # AMQP settings
     @staticmethod
     def amqp_url() -> str:
-        default = "amqp://ia:ia@host.docker.internal:5672/%2f"
+        default = "amqp://guest:guest@host.docker.internal:5672/%2f"
         return os.environ.get("AMQP_URL", default)
 
     @staticmethod
@@ -36,7 +40,7 @@ class Config:
 
     @staticmethod
     def aws_region() -> str:
-        return Config.require("AWS_REGION")
+        return Config.require("AWS_DEFAULT_REGION")
 
     @staticmethod
     def aws_bucket() -> str:
