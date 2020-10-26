@@ -9,7 +9,8 @@ class MediaGrabberError(Exception):
     Just a general error for MediaGrabber
     """
 
-    pass
+    def __init__(self, data: dict):
+        self.data = data
 
 
 class StorageInterface(ABC):
@@ -19,6 +20,10 @@ class StorageInterface(ABC):
 
 
 class FramerInterface(ABC):
+    """
+    :raises: MediaGrabberError when url can not be downloaded
+    """
+
     @abstractmethod
     def get_frames(self, video_page_url: str) -> List[bytes]:
         raise NotImplementedError
@@ -29,6 +34,10 @@ class MediaGrabber(ABC):
     def __init__(self, framer: FramerInterface, storage: StorageInterface):
         self.video_frames_retriever = framer
         self.storage = storage
+
+    """
+    :raises: MediaGrabberError
+    """
 
     def grab(self, url: str) -> List[str]:
         frames = self.video_frames_retriever.get_frames(url)

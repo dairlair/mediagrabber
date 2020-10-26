@@ -11,11 +11,10 @@
 
 from typing import List
 from abc import ABC, abstractmethod
-from mediagrabber.core import FramerInterface
+from mediagrabber.core import FramerInterface, MediaGrabberError
 import os
 import cv2
 import logging
-from injector import inject
 
 
 class VideoDownloadedResponse(object):
@@ -44,6 +43,9 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
         response = self.downloader.download(self.workdir, video_page_url)
+        if response.code != 0 or response.path is None:
+            raise MediaGrabberError(response.__dict__)
+
         path = response.path
         logging.info(f"Video downloaded at {path}")
         frames = filter_frames(retrieve_frames(path))
