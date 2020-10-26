@@ -48,8 +48,13 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
         path = response.path
         logging.info(f"Video downloaded at {path}")
+        directory = os.path.dirname(path)
+
         frames = filter_frames(retrieve_frames(path))
-        return save_frames(frames, os.path.dirname(path))
+        result = save_frames(frames, directory)
+        os.remove(directory)
+
+        return result
 
 
 def get_image_difference(image_1, image_2):
