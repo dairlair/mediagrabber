@@ -15,6 +15,7 @@ from mediagrabber.core import FramerInterface, MediaGrabberError
 import os
 import cv2
 import logging
+import shutil
 
 
 class VideoDownloadedResponse(object):
@@ -52,7 +53,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
         frames = filter_frames(retrieve_frames(path))
         result = save_frames(frames, directory)
-        os.remove(directory)
+        shutil.rmtree(directory)
 
         return result
 
