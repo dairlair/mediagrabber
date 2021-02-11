@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
+from mediagrabber.meter.meter import MeterInterface, Metric
 from typing import List
 import hashlib
 from injector import inject
+import time
+import math
 
 
 class MediaGrabberError(Exception):
@@ -30,10 +33,13 @@ class FramerInterface(ABC):
 
 
 class MediaGrabber(ABC):
+    meter: MeterInterface
+
     @inject
-    def __init__(self, framer: FramerInterface, storage: StorageInterface):
+    def __init__(self, framer: FramerInterface, storage: StorageInterface, meter: MeterInterface):
         self.video_frames_retriever = framer
         self.storage = storage
+        self.meter = meter
 
     """
     :raises: MediaGrabberError
@@ -45,7 +51,18 @@ class MediaGrabber(ABC):
         hash = hashlib.md5(url.encode("utf-8")).hexdigest()
         for i, content in enumerate(frames):
             name = f"{hash}-{i}.jpg"
-            frame_url = self.storage.save(content, name)
+
+            frame_url = self.save(content, name)
+
             frame_urls.append(frame_url)
 
         return frame_urls
+
+    def save(self, content: bytes, name: str) -> str:
+        start_time = time.time()
+        result: str = self.storage.save(content, name)
+        duration = math.floor(1000 * (time.time() - start_time))  # Convert duration to milliseconds
+        metric = Metric("file_upload_to_object_storage", {}, {"value": duration, "size": len(content)})
+        self.meter.write_metric(metric)
+
+        return result

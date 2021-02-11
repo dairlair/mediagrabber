@@ -5,3 +5,4 @@ opencv_python==4.4.0.42
 pika==1.1.0
 python_dotenv==0.14.0
 fire==0.4.0
+influxdb==5.3.1

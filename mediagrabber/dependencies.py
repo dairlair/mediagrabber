@@ -1,4 +1,8 @@
-from injector import singleton, Binder
+import injector
+from mediagrabber.meter.providers.stdout import StdoutMeter
+from mediagrabber.meter.providers.influxdb import InfluxDBMeter
+from mediagrabber.meter.meter import MeterInterface
+from injector import singleton, Binder, Injector
 from mediagrabber.core import MediaGrabber, FramerInterface, StorageInterface
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
@@ -11,9 +15,11 @@ from mediagrabber.s3 import S3Storage
 from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
 import sys
 import logging
+from urllib.parse import urlparse, ParseResult
 
 
 def configure(binder: Binder) -> None:
+    binder.bind(MeterInterface, meter, scope=singleton)
     binder.bind(VideoDownloaderInterface, to=downloader, scope=singleton)
     binder.bind(FramerInterface, to=framer, scope=singleton)
     binder.bind(StorageInterface, to=storage, scope=singleton)
@@ -22,7 +28,7 @@ def configure(binder: Binder) -> None:
 
 
 def framer() -> FramerInterface:
-    return OpencvVideoFramesRetriever(Config.workdir(), downloader())
+    return OpencvVideoFramesRetriever(Config.workdir(), downloader(), Injector(configure).get(MeterInterface))
 
 
 def downloader() -> VideoDownloaderInterface:
@@ -44,3 +50,13 @@ def storage() -> StorageInterface:
     region = Config.aws_region()
     bucket = Config.aws_bucket()
     return S3Storage(aws_access_key_id, aws_secret_access_key, region, bucket)
+
+
+def meter() -> MeterInterface:
+    dsn: str = Config.meter_dsn()
+    parts: ParseResult = urlparse(dsn)
+
+    if parts.scheme == "influxdb":
+        return InfluxDBMeter(dsn)
+
+    return StdoutMeter()

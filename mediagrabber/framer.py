@@ -9,6 +9,7 @@
 # ````
 
 
+from mediagrabber.meter.meter import MeterInterface
 from typing import List
 from abc import ABC, abstractmethod
 from mediagrabber.core import FramerInterface, MediaGrabberError
@@ -28,19 +29,24 @@ class VideoDownloadedResponse(object):
 
 class VideoDownloaderInterface(ABC):
     @abstractmethod
-    def download(
-        self, workdir: str, video_page_url: str
-    ) -> VideoDownloadedResponse:
+    def download(self, workdir: str, video_page_url: str) -> VideoDownloadedResponse:
         raise NotImplementedError
 
 
 class OpencvVideoFramesRetriever(FramerInterface):
     workdir: str
     downloader: VideoDownloaderInterface
+    meter: MeterInterface
 
-    def __init__(self, workdir: str, downloader: VideoDownloaderInterface):
+    def __init__(
+        self,
+        workdir: str,
+        downloader: VideoDownloaderInterface,
+        meter: MeterInterface,
+    ):
         self.workdir = workdir
         self.downloader = downloader
+        self.meter = meter
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
         response = self.downloader.download(self.workdir, video_page_url)
@@ -53,7 +59,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
         frames = filter_frames(retrieve_frames(path))
         result = save_frames(frames, directory)
-        shutil.rmtree(directory)
+        # shutil.rmtree(directory)
 
         return result
 
@@ -62,12 +68,8 @@ def get_image_difference(image_1, image_2):
     first_image_hist = cv2.calcHist([image_1], [0], None, [256], [0, 256])
     second_image_hist = cv2.calcHist([image_2], [0], None, [256], [0, 256])
 
-    img_hist_diff = cv2.compareHist(
-        first_image_hist, second_image_hist, cv2.HISTCMP_BHATTACHARYYA
-    )
-    img_template_probability_match = cv2.matchTemplate(
-        first_image_hist, second_image_hist, cv2.TM_CCOEFF_NORMED
-    )[0][0]
+    img_hist_diff = cv2.compareHist(first_image_hist, second_image_hist, cv2.HISTCMP_BHATTACHARYYA)
+    img_template_probability_match = cv2.matchTemplate(first_image_hist, second_image_hist, cv2.TM_CCOEFF_NORMED)[0][0]
     img_template_diff = 1 - img_template_probability_match
 
     # taking only 10% of histogram diff,
