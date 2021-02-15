@@ -20,11 +20,14 @@ import shutil
 
 
 class VideoDownloadedResponse(object):
+    size: int = None
+
     def __init__(self, code: int, output: str, path: str, duration: str):
         self.code = code
         self.output = output
         self.path = path
         self.duration = duration
+        self.size = os.path.getsize(path)
 
 
 class VideoDownloaderInterface(ABC):
@@ -49,7 +52,10 @@ class OpencvVideoFramesRetriever(FramerInterface):
         self.meter = meter
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
-        response = self.downloader.download(self.workdir, video_page_url)
+        def fn():
+            return self.downloader.download(self.workdir, video_page_url)
+
+        response: VideoDownloadedResponse = self.meter.measure('media_grabbed', fn, {}, {})
         if response.code != 0 or response.path is None:
             raise MediaGrabberError(response.__dict__)
 
@@ -59,6 +65,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
         frames = filter_frames(retrieve_frames(path))
         result = save_frames(frames, directory)
+        # @TODO Uncomment
         # shutil.rmtree(directory)
 
         return result

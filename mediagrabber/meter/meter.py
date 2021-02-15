@@ -23,7 +23,18 @@ class MeterInterface(ABC):
         raise NotImplementedError
 
     def measure(self, measurement: str, fn: Callable, tags: dict = {}, fields: dict = {}):
-        print('Function received')
+        """ Measures duration of specified function execution
+        and pushes the collected duration to the TSDB
+
+        Args:
+            measurement (str): Measurement which should be pushed to the TSDB.
+            fn (Callable): The function which should be measured.
+            tags (dict, optional): [The tags, which should be published]. Defaults to {}.
+            fields (dict, optional): [The additional fields, which should be published]. Defaults to {}.
+
+        Returns:
+            any: Returns the same value which is returned by `fn`.
+        """
         start = time_ns()
         result = fn()
         finish = time_ns()

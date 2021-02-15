@@ -1,12 +1,12 @@
-from abc import abstractmethod
 from mediagrabber.meter.meter import MeterInterface, Metric
 
 
 class StdoutMeter(MeterInterface):
     def __init__(self) -> None:
-        print('init')
+        print('Init meter')
 
     def write_metric(self, metric: Metric) -> None:
+        print('Write metric:')
         print(metric.__dict__)
 
     def __del__(self):

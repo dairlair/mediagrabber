@@ -59,4 +59,7 @@ def meter() -> MeterInterface:
     if parts.scheme == "influxdb":
         return InfluxDBMeter(dsn)
 
+    if parts.scheme == "stdout":
+        return StdoutMeter()
+
     return StdoutMeter()

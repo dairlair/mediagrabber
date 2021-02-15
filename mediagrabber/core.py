@@ -59,10 +59,7 @@ class MediaGrabber(ABC):
         return frame_urls
 
     def save(self, content: bytes, name: str) -> str:
-        start_time = time.time()
-        result: str = self.storage.save(content, name)
-        duration = math.floor(1000 * (time.time() - start_time))  # Convert duration to milliseconds
-        metric = Metric("file_upload_to_object_storage", {}, {"value": duration, "size": len(content)})
-        self.meter.write_metric(metric)
+        def fn():
+            return self.storage.save(content, name)
 
-        return result
+        return self.meter.measure('file_upload_to_object_storage', fn, {}, {'size': len(content)})
