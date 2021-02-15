@@ -20,11 +20,8 @@ class InfluxDBMeter(MeterInterface):
             self.flush()
 
     def flush(self) -> None:
-        count: int = len(self.metrics)
-        print(f'Metrics count: {count}')
         self.client.write_points(self.metrics)
         self.metrics = []
 
     def __del__(self):
-        print("Destructor called, metrics flushed")
         self.flush()

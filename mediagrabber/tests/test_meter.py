@@ -21,12 +21,18 @@ def test_measure():
         global test_measure_parameters
         test_measure_parameters.append(parameter)
 
-    x = 'ParameterX'
+    test_measurement = 'measurementX'
+    test_parameter = 'ParameterX'
 
     def closure():
-        return external_function(x)
+        return external_function(test_parameter)
 
-    meter.measure('test_measurement', closure, {}, {})
+    meter.measure(test_measurement, closure, {}, {})
 
-    assert test_measure_parameters == ['ParameterX']
-    assert meter.metrics == []
+    assert test_measure_parameters == [test_parameter]
+    assert meter.metrics != []
+    metric: dict = meter.metrics[0]
+    assert metric['measurement'] == test_measurement
+    assert metric['tags'] == {}
+    assert metric['time'] > 0
+    assert metric['fields']['duration'] > 0
