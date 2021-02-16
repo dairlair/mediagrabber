@@ -62,4 +62,4 @@ class MediaGrabber(ABC):
         def fn():
             return self.storage.save(content, name)
 
-        return self.meter.measure('file_uploaded_to_object_storage', fn, {}, {'size': len(content)})
+        return self.meter.measure('operation', fn, {'type': 'file_uploaded_to_object_storage'}, {'size': len(content)})

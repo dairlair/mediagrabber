@@ -68,14 +68,13 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn():
             return self.downloader.download(self.workdir, video_page_url)
 
-        metric: Metric
-        vdl: VideoDownloadedResponse
-        (metric, vdl) = self.meter.calculate_metric('media_grabbed', fn)
+        def fields(vdl: VideoDownloadedResponse) -> dict:
+            return {'size': vdl.size}
+
+        vdl: VideoDownloadedResponse = self.meter.measure('operation', fn, {'type': 'media_grabbed'}, fields)
+
         if vdl.code != 0 or vdl.path is None:
             raise MediaGrabberError(vdl.__dict__)
-
-        metric.fields['size'] = vdl.size
-        self.meter.write_metric(metric)
 
         return vdl
 
@@ -83,10 +82,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn() -> List[any]:
             return retrieve_frames(vdl.path)
 
-        (metric, frames) = self.meter.calculate_metric('frames_retrieved', fn)   
-        metric.fields['size'] = vdl.size
-        metric.fields['count'] = len(frames)
-        self.meter.write_metric(metric)
+        frames: List = self.meter.measure('operation', fn, {'type': 'frames_retrieved'}, {'size': vdl.size})
 
         return frames
 
@@ -94,9 +90,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn() -> List[any]:
             return filter_frames(frames)
 
-        (metric, frames) = self.meter.calculate_metric('frames_filtered', fn)
-        metric.fields['count'] = len(frames)
-        self.meter.write_metric(metric)
+        frames: List = self.meter.measure('operation', fn, {'type': 'frames_filtered'}, {'count': len(frames)})
 
         return frames
 
@@ -104,9 +98,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn() -> List[bytes]:
             return save_frames(frames, path)
 
-        (metric, frames) = self.meter.calculate_metric('frames_saved', fn)
-        metric.fields['count'] = len(frames)
-        self.meter.write_metric(metric)
+        frames: List = self.meter.measure('operation', fn, {'type': 'frames_saved'}, {'count': len(frames)})
 
         return frames
 
