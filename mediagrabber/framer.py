@@ -9,7 +9,7 @@
 # ````
 
 
-from mediagrabber.meter.meter import MeterInterface
+from mediagrabber.meter.meter import MeterInterface, Metric
 from typing import List
 from abc import ABC, abstractmethod
 from mediagrabber.core import FramerInterface, MediaGrabberError
@@ -55,9 +55,14 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn():
             return self.downloader.download(self.workdir, video_page_url)
 
-        response: VideoDownloadedResponse = self.meter.measure('media_grabbed', fn, {}, {})
+        metric: Metric
+        response: VideoDownloadedResponse
+        (metric, response) = self.meter.calculate_metric('media_grabbed', fn)
         if response.code != 0 or response.path is None:
             raise MediaGrabberError(response.__dict__)
+
+        metric.fields['size'] = response.size
+        self.meter.write_metric(metric)
 
         path = response.path
         logging.info(f"Video downloaded at {path}")
@@ -65,8 +70,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
 
         frames = filter_frames(retrieve_frames(path))
         result = save_frames(frames, directory)
-        # @TODO Uncomment
-        # shutil.rmtree(directory)
+        shutil.rmtree(directory)
 
         return result
 

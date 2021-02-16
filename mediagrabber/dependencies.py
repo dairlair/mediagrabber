@@ -19,7 +19,7 @@ from urllib.parse import urlparse, ParseResult
 
 
 def configure(binder: Binder) -> None:
-    binder.bind(MeterInterface, meter, scope=singleton)
+    binder.bind(MeterInterface, meter(), scope=singleton)
     binder.bind(VideoDownloaderInterface, to=downloader, scope=singleton)
     binder.bind(FramerInterface, to=framer, scope=singleton)
     binder.bind(StorageInterface, to=storage, scope=singleton)

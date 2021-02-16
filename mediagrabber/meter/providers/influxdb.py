@@ -6,15 +6,15 @@ from typing import List
 class InfluxDBMeter(MeterInterface):
     client: InfluxDBClient
     metrics: List = []
-    batch_size: int = 5000
+    batch_size: int = 10
 
-    def __init__(self, dsn: str) -> None:
+    def __init__(self, dsn: str, batch_size: int = 10) -> None:
         self.client = InfluxDBClient.from_dsn(dsn)
         version = self.client.ping()
         print(f"InfluxDB server version: {version}")
+        self.batch_size = batch_size
 
     def write_metric(self, metric: Metric) -> None:
-        print(metric.__dict__)
         self.metrics.append(metric.__dict__)
         if (len(self.metrics) >= self.batch_size):
             self.flush()

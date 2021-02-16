@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from time import time_ns
-from typing import Callable
+from typing import Callable, Tuple
 
 
 class Metric:
@@ -22,6 +22,24 @@ class MeterInterface(ABC):
     def write_metric(self, metric: Metric) -> None:
         raise NotImplementedError
 
+    def calculate_metric(self, measurement: str, fn: Callable) -> Tuple[Metric, any]:
+        """Runs specified function and creates metric, which
+        contains functiot execution duration (nanonoseconds).
+
+        Args:
+            measurement (str): Measurement which should be specified in the Metric.
+            fn (Callable): The function which should be measured.
+
+        Returns:
+            Tuple[Metric, any]: Tuple, with created metric and returned value from `fn` function.
+        """
+        start = time_ns()
+        result = fn()
+        finish = time_ns()
+        fields = {'duration': finish - start}
+
+        return Metric(measurement, {}, fields, finish), result
+
     def measure(self, measurement: str, fn: Callable, tags: dict = {}, fields: dict = {}):
         """ Measures duration of specified function execution
         and pushes the collected duration to the TSDB
@@ -35,12 +53,11 @@ class MeterInterface(ABC):
         Returns:
             any: Returns the same value which is returned by `fn`.
         """
-        start = time_ns()
-        result = fn()
-        finish = time_ns()
-        fields['duration'] = finish - start
 
-        metric = Metric(measurement, tags, fields, finish)
+        (metric, result) = self.calculate_metric(measurement, fn)
+        metric.tags = {**metric.tags, **tags}
+        metric.fields = {**metric.fields, **fields}
+
         self.write_metric(metric)
 
         return result
