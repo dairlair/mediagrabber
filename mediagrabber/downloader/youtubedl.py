@@ -43,7 +43,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         output: str = ""
         for line in process.stdout:
             logging.info(line)
-            print("Output line: " + line)
+            # print("Output line: " + line)
             output += line
 
         process.wait()
