@@ -52,27 +52,63 @@ class OpencvVideoFramesRetriever(FramerInterface):
         self.meter = meter
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
+        vdl: VideoDownloadedResponse = self.download(video_page_url)
+        logging.info(f"Video downloaded at {vdl.path}")
+
+        frames = self.retrieve_frames(vdl)
+        frames = self.filter_frames(frames)
+        directory = os.path.dirname(vdl.path)
+        result = self.save_frames(frames, directory)
+
+        shutil.rmtree(directory)
+
+        return result
+
+    def download(self, video_page_url: str) -> VideoDownloadedResponse:
         def fn():
             return self.downloader.download(self.workdir, video_page_url)
 
         metric: Metric
-        response: VideoDownloadedResponse
-        (metric, response) = self.meter.calculate_metric('media_grabbed', fn)
-        if response.code != 0 or response.path is None:
-            raise MediaGrabberError(response.__dict__)
+        vdl: VideoDownloadedResponse
+        (metric, vdl) = self.meter.calculate_metric('media_grabbed', fn)
+        if vdl.code != 0 or vdl.path is None:
+            raise MediaGrabberError(vdl.__dict__)
 
-        metric.fields['size'] = response.size
+        metric.fields['size'] = vdl.size
         self.meter.write_metric(metric)
 
-        path = response.path
-        logging.info(f"Video downloaded at {path}")
-        directory = os.path.dirname(path)
+        return vdl
 
-        frames = filter_frames(retrieve_frames(path))
-        result = save_frames(frames, directory)
-        shutil.rmtree(directory)
+    def retrieve_frames(self, vdl: VideoDownloadedResponse) -> List:
+        def fn() -> List[any]:
+            return retrieve_frames(vdl.path)
 
-        return result
+        (metric, frames) = self.meter.calculate_metric('frames_retrieved', fn)   
+        metric.fields['size'] = vdl.size
+        metric.fields['count'] = len(frames)
+        self.meter.write_metric(metric)
+
+        return frames
+
+    def filter_frames(self, frames: List) -> List:
+        def fn() -> List[any]:
+            return filter_frames(frames)
+
+        (metric, frames) = self.meter.calculate_metric('frames_filtered', fn)
+        metric.fields['count'] = len(frames)
+        self.meter.write_metric(metric)
+
+        return frames
+
+    def save_frames(self, frames: List, path: str) -> List[bytes]:
+        def fn() -> List[bytes]:
+            return save_frames(frames, path)
+
+        (metric, frames) = self.meter.calculate_metric('frames_saved', fn)
+        metric.fields['count'] = len(frames)
+        self.meter.write_metric(metric)
+
+        return frames
 
 
 def get_image_difference(image_1, image_2):
@@ -108,7 +144,7 @@ def retrieve_frames(video_file_path) -> List:
     return imgs
 
 
-def filter_frames(frames: List):
+def filter_frames(frames: List) -> List:
     scored = []
     current_frame = None
     for frame in frames:
