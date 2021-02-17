@@ -3,8 +3,6 @@ from mediagrabber.meter.meter import MeterInterface, Metric
 from typing import List
 import hashlib
 from injector import inject
-import time
-import math
 
 
 class MediaGrabberError(Exception):

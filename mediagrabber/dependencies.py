@@ -1,3 +1,4 @@
+from mediagrabber.meter.providers.null import NullMeter
 import injector
 from mediagrabber.meter.providers.stdout import StdoutMeter
 from mediagrabber.meter.providers.influxdb import InfluxDBMeter
@@ -62,4 +63,4 @@ def meter() -> MeterInterface:
     if parts.scheme == "stdout":
         return StdoutMeter()
 
-    return StdoutMeter()
+    return NullMeter()
