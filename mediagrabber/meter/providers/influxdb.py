@@ -10,7 +10,6 @@ class InfluxDBMeter(MeterInterface):
 
     def __init__(self, dsn: str, batch_size: int = 10) -> None:
         self.client = InfluxDBClient.from_dsn(dsn)
-        version = self.client.ping()
         self.batch_size = batch_size
 
     def write_metric(self, metric: Metric) -> None:
