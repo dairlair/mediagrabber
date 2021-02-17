@@ -10,6 +10,17 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "CLI grab",
+            "type": "python",
+            "request": "launch",
+            "program": "./mediagrabber/cli.py",
+            "args": [
+                "grab",
+                "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309",
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }

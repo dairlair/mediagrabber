@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mediagrabber.meter.meter import MeterInterface, Metric
 from typing import List
 import hashlib
 from injector import inject
@@ -30,10 +31,13 @@ class FramerInterface(ABC):
 
 
 class MediaGrabber(ABC):
+    meter: MeterInterface
+
     @inject
-    def __init__(self, framer: FramerInterface, storage: StorageInterface):
+    def __init__(self, framer: FramerInterface, storage: StorageInterface, meter: MeterInterface):
         self.video_frames_retriever = framer
         self.storage = storage
+        self.meter = meter
 
     """
     :raises: MediaGrabberError
@@ -45,7 +49,15 @@ class MediaGrabber(ABC):
         hash = hashlib.md5(url.encode("utf-8")).hexdigest()
         for i, content in enumerate(frames):
             name = f"{hash}-{i}.jpg"
-            frame_url = self.storage.save(content, name)
+
+            frame_url = self.save(content, name)
+
             frame_urls.append(frame_url)
 
         return frame_urls
+
+    def save(self, content: bytes, name: str) -> str:
+        def fn():
+            return self.storage.save(content, name)
+
+        return self.meter.measure('operation', fn, {'type': 'file_uploaded_to_object_storage'}, {'size': len(content)})
