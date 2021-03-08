@@ -60,7 +60,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         directory = os.path.dirname(vdl.path)
         result = self.save_frames(frames, directory)
 
-        shutil.rmtree(directory)
+        # shutil.rmtree(directory)
 
         return result
 
