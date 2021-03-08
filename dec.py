@@ -4,8 +4,17 @@ from console_progressbar import ProgressBar
 vr = VideoReader('workdir2/Constantine.2005.HD-DVDRip.1080p.HEVC.10bit.mkv', ctx=cpu(0))
 length = len(vr)
 print('video frames:', length)
-frames_numbers = range(0, length, 150)
-frames = vr.get_batch(frames_numbers)
+
+pb = ProgressBar(total=length, prefix='Here', suffix='Now', decimals=3, length=50, fill='X', zfill='-')
+
+for pos in range(0, length, 150):
+    batch = vr.next()
+    pb.print_progress_bar(pos)
+    vr.seek(pos)
+
+
+# frames_numbers = range(0, length, 150)
+# frames = vr.get_batch(frames_numbers)
 
 # # a file like object works as well, for in-memory decoding
 # with open('workdir2/Constantine.2005.HD-DVDRip.1080p.HEVC.10bit.mkv', 'rb') as f:
