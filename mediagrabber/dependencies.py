@@ -1,12 +1,9 @@
 from injector import singleton, Binder
-from mediagrabber.core import MediaGrabber, FramerInterface, StorageInterface
+from mediagrabber.core import MediaGrabber, StorageInterface
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
 from pika.exceptions import AMQPConnectionError
-from mediagrabber.framer import (
-    OpencvVideoFramesRetriever,
-    VideoDownloaderInterface,
-)
+from mediagrabber.core import VideoDownloaderInterface
 from mediagrabber.s3 import S3Storage
 from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
 import sys
@@ -16,14 +13,14 @@ from urllib.parse import urlparse, ParseResult
 
 def configure(binder: Binder) -> None:
     binder.bind(VideoDownloaderInterface, to=downloader, scope=singleton)
-    binder.bind(FramerInterface, to=framer, scope=singleton)
+    # binder.bind(FramerInterface, to=framer, scope=singleton)
     binder.bind(StorageInterface, to=storage, scope=singleton)
     binder.bind(MediaGrabber, to=MediaGrabber, scope=singleton)
     binder.bind(BlockingConnection, amqp, scope=singleton)
 
 
-def framer() -> FramerInterface:
-    return OpencvVideoFramesRetriever(Config.workdir(), downloader())
+# def framer() -> FramerInterface:
+#     return OpencvVideoFramesRetriever(Config.workdir(), downloader())
 
 
 def downloader() -> VideoDownloaderInterface:
