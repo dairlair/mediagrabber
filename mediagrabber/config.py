@@ -47,10 +47,6 @@ class Config:
         return Config.require("AWS_BUCKET")
 
     @staticmethod
-    def meter_dsn() -> str:
-        return os.environ.get("METER_DSN")
-
-    @staticmethod
     def require(variable) -> str:
         value = os.environ.get(variable, None)
         if value is None:

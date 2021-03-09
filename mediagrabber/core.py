@@ -1,17 +1,63 @@
 from abc import ABC, abstractmethod
-from mediagrabber.meter.meter import MeterInterface, Metric
+from dataclasses import dataclass
 from typing import List
-import hashlib
 from injector import inject
+import os
+import numpy as np
 
 
+@dataclass
 class MediaGrabberError(Exception):
-    """
-    Just a general error for MediaGrabber
-    """
+    data: dict
 
-    def __init__(self, data: dict):
-        self.data = data
+
+class VideoDownloaderResponse(object):
+    size: int = None
+
+    def __init__(self, code: int, output: str, path: str, duration: str):
+        self.code = code
+        self.output = output
+        self.path = path
+        self.duration = duration
+        self.size = os.path.getsize(path)
+
+
+class VideoDownloaderInterface(ABC):
+    @abstractmethod
+    def download(self, video_page_url: str) -> VideoDownloaderResponse:
+        raise NotImplementedError
+
+
+class FacesRetrieverResponse(object):
+    id: str
+
+    def __init__(self, id: str, img: np.array, type: str, coords: List[tuple]):
+        """
+        Creates new instance with the retrieved face data.
+
+        Contains the image, as a numpy array, unique identified, which can be used for exactly-once
+        further processing guarantee, type ('face' or 'frame') and faces locations, in
+
+        For the type 'face' the coords will be (0, 0, 0, 0).
+
+        Args:
+            id (str): Unique image identifier, may be just a '<Frame Number>' for the frame
+                      or '<Frame Number>-<Face Number>' for the face retrieved from the certaint
+                      frame. Can be used for exactly-once further processing guarantee
+
+            img (np.array): An image (as a numpy array)
+
+            type (str): 'face' or 'frame'
+
+            coords (List[tuple]): The tuples list with each face locations in format: (top, right, bottom, left).
+        """
+        self.id = str
+
+
+class FacesRetrieverInterface(ABC):
+    @abstractmethod
+    def retrieve(self, file: str) -> List[FacesRetrieverResponse]:
+        raise NotImplementedError
 
 
 class StorageInterface(ABC):
@@ -31,32 +77,14 @@ class FramerInterface(ABC):
 
 
 class MediaGrabber(ABC):
-    meter: MeterInterface
-
     @inject
-    def __init__(self, framer: FramerInterface, storage: StorageInterface, meter: MeterInterface):
-        self.video_frames_retriever = framer
-        self.storage = storage
-        self.meter = meter
+    def __init__(self, downloader: VideoDownloaderInterface, retriever: FacesRetrieverInterface):
+        self.downloader = downloader
+        self.retriever = retriever
 
     def grab(self, url: str) -> List[str]:
         """
         :raises: MediaGrabberError
         """
-        frames = self.video_frames_retriever.get_frames(url)
-        frame_urls: List[str] = []
-        hash = hashlib.md5(url.encode("utf-8")).hexdigest()
-        for i, content in enumerate(frames):
-            name = f"{hash}-{i}.jpg"
-
-            frame_url = self.save(content, name)
-
-            frame_urls.append(frame_url)
-
-        return frame_urls
-
-    def save(self, content: bytes, name: str) -> str:
-        def fn():
-            return self.storage.save(content, name)
-
-        return self.meter.measure("operation", fn, {"type": "file_uploaded_to_object_storage"}, {"size": len(content)})
+        vdl: VideoDownloaderResponse = self.downloader.download(url)
+        return vdl.__dict__

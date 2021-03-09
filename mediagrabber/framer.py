@@ -9,7 +9,6 @@
 # ````
 
 
-from mediagrabber.meter.meter import MeterInterface, Metric
 from typing import List
 from abc import ABC, abstractmethod
 from mediagrabber.core import FramerInterface, MediaGrabberError
@@ -39,17 +38,10 @@ class VideoDownloaderInterface(ABC):
 class OpencvVideoFramesRetriever(FramerInterface):
     workdir: str
     downloader: VideoDownloaderInterface
-    meter: MeterInterface
 
-    def __init__(
-        self,
-        workdir: str,
-        downloader: VideoDownloaderInterface,
-        meter: MeterInterface,
-    ):
+    def __init__(self, workdir: str, downloader: VideoDownloaderInterface):
         self.workdir = workdir
         self.downloader = downloader
-        self.meter = meter
 
     def get_frames(self, video_page_url: str) -> List[bytes]:
         vdl: VideoDownloadedResponse = self.download(video_page_url)
@@ -65,13 +57,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         return result
 
     def download(self, video_page_url: str) -> VideoDownloadedResponse:
-        def fn():
-            return self.downloader.download(self.workdir, video_page_url)
-
-        def fields(vdl: VideoDownloadedResponse) -> dict:
-            return {'size': vdl.size}
-
-        vdl: VideoDownloadedResponse = self.meter.measure('operation', fn, {'type': 'media_grabbed'}, fields)
+        vdl: VideoDownloadedResponse = self.downloader.download(self.workdir, video_page_url)
 
         if vdl.code != 0 or vdl.path is None:
             raise MediaGrabberError(vdl.__dict__)
@@ -82,7 +68,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn() -> List[any]:
             return retrieve_frames(vdl.path)
 
-        frames: List = self.meter.measure('operation', fn, {'type': 'frames_retrieved'}, {'size': vdl.size})
+        frames: List = self.meter.measure("operation", fn, {"type": "frames_retrieved"}, {"size": vdl.size})
 
         return frames
 
@@ -90,7 +76,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn() -> List[any]:
             return filter_frames(frames)
 
-        frames: List = self.meter.measure('operation', fn, {'type': 'frames_filtered'}, {'count': len(frames)})
+        frames: List = self.meter.measure("operation", fn, {"type": "frames_filtered"}, {"count": len(frames)})
 
         return frames
 
@@ -98,7 +84,7 @@ class OpencvVideoFramesRetriever(FramerInterface):
         def fn() -> List[bytes]:
             return save_frames(frames, path)
 
-        frames: List = self.meter.measure('operation', fn, {'type': 'frames_saved'}, {'count': len(frames)})
+        frames: List = self.meter.measure("operation", fn, {"type": "frames_saved"}, {"count": len(frames)})
 
         return frames
 
