@@ -1,16 +1,32 @@
 from decord import VideoReader, cpu
 from console_progressbar import ProgressBar
+from PIL import Image, ImageDraw
+import face_recognition
 
-vr = VideoReader('workdir2/Constantine.2005.HD-DVDRip.1080p.HEVC.10bit.mkv', ctx=cpu(0))
+workdir = 'workdir/1f9108b10e771890eeec0d0fa1a67fd2/'
+vr = VideoReader(workdir + '/source.mp4', ctx=cpu(0))
 length = len(vr)
-print('video frames:', length)
+fps = int(vr.get_avg_fps())
+print(f'video length: {length}, FPS: {fps}')
 
 pb = ProgressBar(total=length, prefix='Here', suffix='Now', decimals=3, length=50, fill='X', zfill='-')
 
-for pos in range(0, length, 150):
-    batch = vr.next()
+for pos in range(0, length, fps * 5):
+    # vr.seek(pos)
+    frame = vr[pos].asnumpy()
+    face_locations = face_recognition.face_locations(frame, 1, "fog")
+    if face_locations:
+        face_encodings = face_recognition.face_encodings(frame, face_locations)
+
+    # if face_locations:
+    #     pil_image = Image.fromarray(frame)
+    #     draw = ImageDraw.Draw(pil_image)
+    #     # for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+    #     #     draw.rectangle(((left, top), (right, bottom)), outline=(0, 0, 255))
+    #     # pil_image.save(workdir + f'/frame-{pos}.png')
+
     pb.print_progress_bar(pos)
-    vr.seek(pos)
+
 
 
 # frames_numbers = range(0, length, 150)
