@@ -25,7 +25,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         command = [
             "youtube-dl",
             "-f",
-            "bestvideo[height<=480]+bestaudio/best[height<=480]",
+            "bestvideo[height<=360]+bestaudio/best[height<=360]",
             video_page_url,
             "-o",
             path,

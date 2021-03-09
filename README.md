@@ -27,5 +27,5 @@ python mediagrabber/cli.py download https://rt.pornhub.com/view_video.php?viewke
 
 Or retrieve faces from the downloaded video via:
 ```
-python mediagrabber/cli.py retrieve ~/Videos/Constantine.mkv
+python mediagrabber/cli.py retrieve /home/dairlair/Videos/Constantine.mkv
 ```

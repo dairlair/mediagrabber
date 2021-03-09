@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
+from PIL import Image, ImageDraw
 from injector import inject
-from deepface import DeepFace
 import os
 import numpy as np
+import face_recognition
+from tqdm import tqdm
 
 
 @dataclass
@@ -83,7 +85,34 @@ class MediaGrabber(ABC):
     def retrieve(self, file: str):
         return self.retriever.retrieve(file)
 
-
     def detect(self, file: str):
         frames = self.retrieve(file)
-        DeepFace.
+        frame_number = 0
+        for frame in tqdm(frames):
+            # Find all the faces and face encodings in the current frame of video
+            face_locations = face_recognition.face_locations(frame, 0, "fog")
+            # face_encodings = face_recognition.face_encodings(frame, face_locations)
+
+            if len(face_locations):
+                pil_image = Image.fromarray(frame)
+                draw = ImageDraw.Draw(pil_image)
+
+                # Loop through each face found in the unknown image
+                face_number = 0
+                for (top, right, bottom, left) in face_locations:
+                    # Draw a box around the face using the Pillow module
+
+                    outline = (0, 0, 255)
+                    face = pil_image.crop(box=(left, top, right, bottom))
+                    face.save(f'workdir/faces/face-{frame_number}-{face_number}.png')
+                    face_number += 1
+                    draw.rectangle(((left, top), (right, bottom)), outline=outline)
+                    pil_image.save(f'workdir/frame-{frame_number}.png')
+
+            frame_number += 1
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
