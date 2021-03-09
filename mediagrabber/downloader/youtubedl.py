@@ -1,4 +1,4 @@
-from mediagrabber.core import VideoDownloaderInterface, VideoDownloaderResponse
+from mediagrabber.core import VideoDownloaderInterface, DownloadedVideoResponse
 from mediagrabber.core import MediaGrabberError
 import subprocess
 import os
@@ -14,7 +14,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
     def __init__(self, workdir: str) -> None:
         self.workdir = workdir
 
-    def download(self, video_page_url: str) -> VideoDownloaderResponse:
+    def download(self, video_page_url: str) -> DownloadedVideoResponse:
         """
         Downloads videos from the specified page and stores the file
         in the `workdirectory`.
@@ -51,7 +51,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         # Wait for date to terminate. Get return returncode ##
         return_code = process.wait()
         if return_code != 0:
-            return VideoDownloaderResponse(return_code, output, None, None)
+            return DownloadedVideoResponse(return_code, output, None, None)
 
         # Try to find downloadded file
         mask = os.path.join(video_directory, "source.*")
@@ -61,7 +61,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
 
         duration = time.time() - started_at
 
-        return VideoDownloaderResponse(process.returncode, output, str(path), duration)
+        return DownloadedVideoResponse(process.returncode, output, str(path), duration)
 
     def create_video_directory(self, video_page_url: str) -> str:
         hash = hashlib.md5(video_page_url.encode("utf-8")).hexdigest()

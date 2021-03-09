@@ -18,9 +18,14 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
-Just run this command:
+Now you can download video from the website with:
 ```sh
-python mediagrabber/cli.py grab https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309
+python mediagrabber/cli.py download https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309
 # or even
-python mediagrabber/cli.py grab https://rt.pornhub.com/view_video.php?viewkey=ph5e63ee1d4a3f5
+python mediagrabber/cli.py download https://rt.pornhub.com/view_video.php?viewkey=ph5e63ee1d4a3f5
+```
+
+Or retrieve faces from the downloaded video via:
+```
+python mediagrabber/cli.py retrieve ~/Videos/Constantine.mkv
 ```

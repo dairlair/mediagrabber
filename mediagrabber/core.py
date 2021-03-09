@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
 from injector import inject
+from deepface import DeepFace
 import os
 import numpy as np
 
@@ -11,7 +12,7 @@ class MediaGrabberError(Exception):
     data: dict
 
 
-class VideoDownloaderResponse(object):
+class DownloadedVideoResponse(object):
     size: int = None
 
     def __init__(self, code: int, output: str, path: str, duration: str):
@@ -24,11 +25,11 @@ class VideoDownloaderResponse(object):
 
 class VideoDownloaderInterface(ABC):
     @abstractmethod
-    def download(self, video_page_url: str) -> VideoDownloaderResponse:
+    def download(self, video_page_url: str) -> DownloadedVideoResponse:
         raise NotImplementedError
 
 
-class FacesRetrieverResponse(object):
+class RetrievedFaceResponse(object):
     id: str
 
     def __init__(self, id: str, img: np.array, type: str, coords: List[tuple]):
@@ -56,7 +57,7 @@ class FacesRetrieverResponse(object):
 
 class FacesRetrieverInterface(ABC):
     @abstractmethod
-    def retrieve(self, file: str) -> List[FacesRetrieverResponse]:
+    def retrieve(self, file: str) -> List[RetrievedFaceResponse]:
         raise NotImplementedError
 
 
@@ -66,24 +67,23 @@ class StorageInterface(ABC):
         raise NotImplementedError
 
 
-class FramerInterface(ABC):
-    """
-    :raises: MediaGrabberError when url can not be downloaded
-    """
-
-    @abstractmethod
-    def get_frames(self, video_page_url: str) -> List[bytes]:
-        raise NotImplementedError
-
-
 class MediaGrabber(ABC):
     @inject
-    def __init__(self, downloader: VideoDownloaderInterface):
+    def __init__(self, downloader: VideoDownloaderInterface, retriever: FacesRetrieverInterface):
         self.downloader = downloader
+        self.retriever = retriever
 
-    def grab(self, url: str) -> List[str]:
+    def download(self, url: str) -> List[str]:
         """
         :raises: MediaGrabberError
         """
-        vdl: VideoDownloaderResponse = self.downloader.download(url)
+        vdl: DownloadedVideoResponse = self.downloader.download(url)
         return vdl.__dict__
+
+    def retrieve(self, file: str):
+        return self.retriever.retrieve(file)
+
+
+    def detect(self, file: str):
+        frames = self.retrieve(file)
+        DeepFace.
