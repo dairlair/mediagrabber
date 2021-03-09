@@ -78,9 +78,8 @@ class FramerInterface(ABC):
 
 class MediaGrabber(ABC):
     @inject
-    def __init__(self, downloader: VideoDownloaderInterface, retriever: FacesRetrieverInterface):
+    def __init__(self, downloader: VideoDownloaderInterface):
         self.downloader = downloader
-        self.retriever = retriever
 
     def grab(self, url: str) -> List[str]:
         """

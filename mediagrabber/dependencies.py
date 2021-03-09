@@ -24,7 +24,7 @@ def configure(binder: Binder) -> None:
 
 
 def downloader() -> VideoDownloaderInterface:
-    return YoutubedlVideoDownloader()
+    return YoutubedlVideoDownloader(Config.workdir())
 
 
 def amqp() -> BlockingConnection:

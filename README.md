@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 Just run this command:
 ```sh
-python ./mediagrabber/cli.py grab https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309
+python mediagrabber/cli.py grab https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309
 # or even
-python ./mediagrabber/cli.py grab https://rt.pornhub.com/view_video.php?viewkey=ph5e63ee1d4a3f5
+python mediagrabber/cli.py grab https://rt.pornhub.com/view_video.php?viewkey=ph5e63ee1d4a3f5
 ```
