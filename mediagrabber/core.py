@@ -29,35 +29,35 @@ class VideoDownloaderInterface(ABC):
         raise NotImplementedError
 
 
-class RetrievedFaceResponse(object):
-    id: str
+# class SomeFaceResponse(object):
+#     id: str
 
-    def __init__(self, id: str, img: np.array, type: str, coords: List[tuple]):
-        """
-        Creates new instance with the retrieved face data.
+#     def __init__(self, id: str, img: np.array, type: str, coords: List[tuple]):
+#         """
+#         Creates new instance with the retrieved face data.
 
-        Contains the image, as a numpy array, unique identified, which can be used for exactly-once
-        further processing guarantee, type ('face' or 'frame') and faces locations, in
+#         Contains the image, as a numpy array, unique identified, which can be used for exactly-once
+#         further processing guarantee, type ('face' or 'frame') and faces locations, in
 
-        For the type 'face' the coords will be (0, 0, 0, 0).
+#         For the type 'face' the coords will be (0, 0, 0, 0).
 
-        Args:
-            id (str): Unique image identifier, may be just a '<Frame Number>' for the frame
-                      or '<Frame Number>-<Face Number>' for the face retrieved from the certaint
-                      frame. Can be used for exactly-once further processing guarantee
+#         Args:
+#             id (str): Unique image identifier, may be just a '<Frame Number>' for the frame
+#                       or '<Frame Number>-<Face Number>' for the face retrieved from the certaint
+#                       frame. Can be used for exactly-once further processing guarantee
 
-            img (np.array): An image (as a numpy array)
+#             img (np.array): An image (as a numpy array)
 
-            type (str): 'face' or 'frame'
+#             type (str): 'face' or 'frame'
 
-            coords (List[tuple]): The tuples list with each face locations in format: (top, right, bottom, left).
-        """
-        self.id = str
+#             coords (List[tuple]): The tuples list with each face locations in format: (top, right, bottom, left).
+#         """
+#         self.id = str
 
 
-class FacesRetrieverInterface(ABC):
+class FramesRetrieverInterface(ABC):
     @abstractmethod
-    def retrieve(self, file: str) -> List[RetrievedFaceResponse]:
+    def retrieve(self, file: str) -> List:
         raise NotImplementedError
 
 
@@ -69,7 +69,7 @@ class StorageInterface(ABC):
 
 class MediaGrabber(ABC):
     @inject
-    def __init__(self, downloader: VideoDownloaderInterface, retriever: FacesRetrieverInterface):
+    def __init__(self, downloader: VideoDownloaderInterface, retriever: FramesRetrieverInterface):
         self.downloader = downloader
         self.retriever = retriever
 

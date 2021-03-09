@@ -1,11 +1,11 @@
-from mediagrabber.core import FacesRetrieverInterface, RetrievedFaceResponse
+from mediagrabber.core import FramesRetrieverInterface
 from typing import List
 import av
 # TODO Remove progressbar
 from tqdm import tqdm
 
 
-class AvFacesRetriever(FacesRetrieverInterface):
+class AvFacesRetriever(FramesRetrieverInterface):
     """
     Retrieve images with faces from the give video file.
     Uses decord library to read the file.
@@ -13,7 +13,7 @@ class AvFacesRetriever(FacesRetrieverInterface):
     Args:
         FacesRetrieverInterface ([type]): [description]
     """
-    def retrieve(self, file: str) -> List[RetrievedFaceResponse]:
+    def retrieve(self, file: str) -> List[]:
         frames = []
         with av.open('/home/dairlair/Videos/Constantine.mkv') as container:
             # Signal that we only want to look at keyframes.
@@ -23,4 +23,4 @@ class AvFacesRetriever(FacesRetrieverInterface):
             for frame in tqdm(container.decode(stream)):
                 frames.append(frame)
 
-        return {'framesCount': len(frames)}
+        return frames

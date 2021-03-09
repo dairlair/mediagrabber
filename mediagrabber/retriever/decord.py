@@ -1,13 +1,12 @@
-import logging
 from decord import VideoReader, cpu
 from decord._ffi.base import DECORDError
-from mediagrabber.core import FacesRetrieverInterface, RetrievedFaceResponse
+from mediagrabber.core import FramesRetrieverInterface
 from typing import List
 # TODO Remove progressbar
 from tqdm import tqdm
 
 
-class DecordFacesRetriever(FacesRetrieverInterface):
+class DecordFacesRetriever(FramesRetrieverInterface):
     """
     Retrieve images with faces from the give video file.
     Uses decord library to read the file.
@@ -15,16 +14,18 @@ class DecordFacesRetriever(FacesRetrieverInterface):
     Args:
         FacesRetrieverInterface ([type]): [description]
     """
-    def retrieve(self, file: str) -> List[RetrievedFaceResponse]:
+    def retrieve(self, file: str) -> List:
         vr = VideoReader(file, ctx=cpu(0))
         length = len(vr)
         fps = int(vr.get_avg_fps())
         print(f'video length: {length}, FPS: {fps}')
 
+        frames = []
         for pos in tqdm(range(0, length, fps * 5)):
             try:
                 vr.seek(pos)
                 frame = vr.next()
+                frames.append(frame.asnumpy())
             except DECORDError:
                 continue
             # frame = vr[pos].asnumpy()
@@ -39,4 +40,4 @@ class DecordFacesRetriever(FacesRetrieverInterface):
             #     #     draw.rectangle(((left, top), (right, bottom)), outline=(0, 0, 255))
             #     # pil_image.save(workdir + f'/frame-{pos}.png')
 
-        return [RetrievedFaceResponse('1', [], 'face', ())]
+        return frames

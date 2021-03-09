@@ -1,6 +1,6 @@
 from mediagrabber.retriever.av import AvFacesRetriever
 from injector import singleton, Binder
-from mediagrabber.core import MediaGrabber, StorageInterface, FacesRetrieverInterface
+from mediagrabber.core import MediaGrabber, StorageInterface, FramesRetrieverInterface
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
 from pika.exceptions import AMQPConnectionError
@@ -13,7 +13,7 @@ import logging
 
 def configure(binder: Binder) -> None:
     binder.bind(VideoDownloaderInterface, to=downloader, scope=singleton)
-    binder.bind(FacesRetrieverInterface, to=retriever, scope=singleton)
+    binder.bind(FramesRetrieverInterface, to=retriever, scope=singleton)
     binder.bind(StorageInterface, to=storage, scope=singleton)
     binder.bind(MediaGrabber, to=MediaGrabber, scope=singleton)
     binder.bind(BlockingConnection, amqp, scope=singleton)
@@ -22,7 +22,7 @@ def configure(binder: Binder) -> None:
 def downloader() -> VideoDownloaderInterface:
     return YoutubedlVideoDownloader(Config.workdir())
 
-def retriever() -> FacesRetrieverInterface:
+def retriever() -> FramesRetrieverInterface:
     return AvFacesRetriever()
 
 
