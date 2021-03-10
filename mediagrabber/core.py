@@ -96,14 +96,23 @@ class MediaGrabber(ABC):
         """
         return self.downloader.download(url)
 
-    def retrieve(self, file: str):
-        return self.retriever.retrieve(file)
+    def retrieve(self, file: str, height: int = 360):
+        frames: List[Image] = self.retriever.retrieve(file)
+        logging.info(f'{len(frames)} frames retrieved from video file')
+
+        frames = self.resizer.resize(frames, height)
+        logging.info(f'{len(frames)} frames resized to height {height}')
+
+        faces: List[DetectedFaceResponse] = self.detector.detect(frames)
+        logging.info(f'{len(faces)} faces found')
+
+        self.publisher.publish(faces, path.realpath(path.dirname(file)))
 
     def grab(self, url: str, height: int = 360) -> dict:
         dvr: DownloadedVideoResponse = self.download(url)
         logging.info(f'{dvr.size} bytes video downloaded')
 
-        frames: List[Image] = self.retrieve(dvr.path)
+        frames: List[Image] = self.retriever.retrieve(dvr.path)
         logging.info(f'{len(frames)} frames retrieved from video file')
 
         frames = self.resizer.resize(frames, height)

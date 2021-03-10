@@ -26,7 +26,7 @@ python mediagrabber/cli.py download "https://pornhub.com/view_video.php?viewkey=
 
 Retrieve faces from the downloaded video via:
 ```sh
-python mediagrabber/cli.py retrieve /home/dairlair/Videos/Constantine.mkv
+python mediagrabber/cli.py retrieve /home/dairlair/Videos/Constantine.mkv --height=360
 ```
 
 Or download, retrieve and save faces in one command with:
