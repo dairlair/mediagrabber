@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import logging
+from os import path
 from typing import List
-from PIL import Image, ImageDraw
+from PIL.Image import Image, fromarray
 from injector import inject
 import os
-import numpy as np
-import face_recognition
-from tqdm import tqdm
 
 
 @dataclass
@@ -14,7 +13,7 @@ class MediaGrabberError(Exception):
     data: dict
 
 
-class DownloadedVideoResponse(object):
+class DownloadedVideoResponse:
     size: int = None
 
     def __init__(self, code: int, output: str, path: str, duration: str):
@@ -31,35 +30,41 @@ class VideoDownloaderInterface(ABC):
         raise NotImplementedError
 
 
-# class SomeFaceResponse(object):
-#     id: str
-
-#     def __init__(self, id: str, img: np.array, type: str, coords: List[tuple]):
-#         """
-#         Creates new instance with the retrieved face data.
-
-#         Contains the image, as a numpy array, unique identified, which can be used for exactly-once
-#         further processing guarantee, type ('face' or 'frame') and faces locations, in
-
-#         For the type 'face' the coords will be (0, 0, 0, 0).
-
-#         Args:
-#             id (str): Unique image identifier, may be just a '<Frame Number>' for the frame
-#                       or '<Frame Number>-<Face Number>' for the face retrieved from the certaint
-#                       frame. Can be used for exactly-once further processing guarantee
-
-#             img (np.array): An image (as a numpy array)
-
-#             type (str): 'face' or 'frame'
-
-#             coords (List[tuple]): The tuples list with each face locations in format: (top, right, bottom, left).
-#         """
-#         self.id = str
-
-
 class FramesRetrieverInterface(ABC):
     @abstractmethod
-    def retrieve(self, file: str) -> List:
+    def retrieve(self, file: str) -> List[Image]:
+        """
+        Reads the video file and retrieves frames in the Pillow library format.
+
+        Args:
+            file (str): Path to the file
+
+        Returns:
+            List[Image]: List of PIL Images
+        """
+        raise NotImplementedError
+
+
+class FramesResizerInterface(ABC):
+    @abstractmethod
+    def resize(self, frames: List[Image], height: int = 360) -> List[Image]:
+        raise NotImplementedError
+
+
+@dataclass
+class DetectedFaceResponse:
+    id: str
+    img: Image  # PIL.Image.Image object
+
+
+class FacesDetectorInterface(ABC):
+    @abstractmethod
+    def detect(self, frames: List[Image]) -> List[DetectedFaceResponse]:
+        raise NotImplementedError
+
+class FacesPublisherInterface(ABC):
+    @abstractmethod
+    def publish(self, faces: List[DetectedFaceResponse], path: str):
         raise NotImplementedError
 
 
@@ -71,48 +76,40 @@ class StorageInterface(ABC):
 
 class MediaGrabber(ABC):
     @inject
-    def __init__(self, downloader: VideoDownloaderInterface, retriever: FramesRetrieverInterface):
+    def __init__(
+        self,
+        downloader: VideoDownloaderInterface,
+        retriever: FramesRetrieverInterface,
+        resizer: FramesResizerInterface,
+        detector: FacesDetectorInterface,
+        publisher: FacesPublisherInterface
+    ):
         self.downloader = downloader
         self.retriever = retriever
+        self.resizer = resizer
+        self.detector = detector
+        self.publisher = publisher
 
     def download(self, url: str) -> List[str]:
         """
         :raises: MediaGrabberError
         """
-        vdl: DownloadedVideoResponse = self.downloader.download(url)
-        return vdl.__dict__
+        return self.downloader.download(url)
 
     def retrieve(self, file: str):
         return self.retriever.retrieve(file)
 
-    def detect(self, file: str):
-        frames = self.retrieve(file)
-        frame_number = 0
-        for frame in tqdm(frames):
-            # Find all the faces and face encodings in the current frame of video
-            face_locations = face_recognition.face_locations(frame, 0, "fog")
-            # face_encodings = face_recognition.face_encodings(frame, face_locations)
+    def grab(self, url: str, height: int = 360) -> dict:
+        dvr: DownloadedVideoResponse = self.download(url)
+        logging.info(f'{dvr.size} bytes video downloaded')
 
-            if len(face_locations):
-                pil_image = Image.fromarray(frame)
-                draw = ImageDraw.Draw(pil_image)
+        frames: List[Image] = self.retrieve(dvr.path)
+        logging.info(f'{len(frames)} frames retrieved from video file')
 
-                # Loop through each face found in the unknown image
-                face_number = 0
-                for (top, right, bottom, left) in face_locations:
-                    # Draw a box around the face using the Pillow module
+        frames = self.resizer.resize(frames, height)
+        logging.info(f'{len(frames)} frames resized to height {height}')
 
-                    outline = (0, 0, 255)
-                    face = pil_image.crop(box=(left, top, right, bottom))
-                    face.save(f'workdir/faces/face-{frame_number}-{face_number}.png')
-                    face_number += 1
-                    draw.rectangle(((left, top), (right, bottom)), outline=outline)
-                    pil_image.save(f'workdir/frame-{frame_number}.png')
+        faces: List[DetectedFaceResponse] = self.detector.detect(frames)
+        logging.info(f'{len(faces)} faces found')
 
-            frame_number += 1
-
-
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        self.publisher.publish(faces, path.realpath(path.dirname(dvr.path)))

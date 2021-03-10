@@ -1,0 +1,40 @@
+from typing import List
+from mediagrabber.core import FacesDetectorInterface, DetectedFaceResponse
+from PIL.Image import Image
+from tqdm import tqdm
+import face_recognition
+import numpy as np
+
+
+class UniqueFaceDetector(FacesDetectorInterface):
+    known_encodings: List[np.array] = []
+
+    def detect(self, frames: List[Image]) -> List[DetectedFaceResponse]:
+        detected_faces: List[DetectedFaceResponse] = []
+        for i, frame in enumerate(tqdm(frames)):
+            frame_data = np.array(frame)
+            locations = face_recognition.face_locations(frame_data, 0, "fog")
+            encodings = face_recognition.face_encodings(frame_data, locations)
+
+            # detected_faces.append(DetectedFaceResponse(f'face-{i}', frame))
+
+            j = 0
+            for (top, right, bottom, left), encoding in zip(locations, encodings):
+                if self.is_known(encoding):
+                    # Face already is found and should be skipped
+                    continue
+
+                # Crop the face from frame and add to results
+                face = frame.crop(box=(left, top, right, bottom))
+                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face))
+                j += 1
+
+        return detected_faces
+
+    def is_known(self, encoding: np.array) -> bool:
+        results = face_recognition.compare_faces(self.known_encodings, encoding)
+        if True in results:
+            return True
+
+        self.known_encodings.append(encoding)
+        return False
