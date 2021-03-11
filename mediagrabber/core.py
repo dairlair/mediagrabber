@@ -76,6 +76,10 @@ class FacesPublisherInterface(ABC):
         raise NotImplementedError
 
 
+def is_url(self, url: str) -> bool:
+    return url.startswith(("http://", "https://"))
+
+
 class MediaGrabber(ABC):
     @inject
     def __init__(
@@ -97,8 +101,8 @@ class MediaGrabber(ABC):
 
     def retrieve(
         self,
-        file: str,
-        resize_height: int = 360,
+        filename: str,
+        resize_height: int = None,
         number_of_upsamples: int = 0,
         locate_model: str = "fog",
         num_jitters: int = 1,
@@ -109,7 +113,7 @@ class MediaGrabber(ABC):
 
         Args:
             file (str): Path to the file
-            resize_height (int, optional): Desired height for images resizing. Defaults to 360.
+            resize_height (int, optional): Desired height for images resizing.
             number_of_upsamples (int, optional): How many times to upsample the image looking for faces.
                 Higher numbers find smaller faces.
             locate_model (str, optional): Which face detection model to use. "hog" is less accurate but faster on CPUs.
@@ -119,30 +123,27 @@ class MediaGrabber(ABC):
             encode_model (str, optional): which model to use. "large" (default) or "small" which only returns 5 points
                 but is faster.
         """
-        frames: List[Image] = self.retriever.retrieve(file)
+        frames: List[Image] = self.retriever.retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
 
-        frames = self.resizer.resize(frames, resize_height)
-        logging.info(f"{len(frames)} frames resized to height {resize_height}")
+        if resize_height is not None:
+            frames = self.resizer.resize(frames, resize_height)
+            logging.info(f"{len(frames)} frames resized to height {resize_height}")
 
         faces: List[DetectedFaceResponse] = self.detector.detect(
             frames, number_of_upsamples, locate_model, num_jitters, encode_model
         )
         logging.info(f"{len(faces)} faces found")
 
-        self.publisher.publish(faces, path.realpath(path.dirname(file)))
+        self.publisher.publish(faces, path.realpath(path.dirname(filename)))
 
-    def grab(self, url: str, resize_height: int = 360) -> dict:
-        dvr: DownloadedVideoResponse = self.downloader.download(url)
-        logging.info(f"{dvr.size} bytes video downloaded")
+    def get_file_path(self, url: str) -> DownloadedVideoResponse:
+        if self.is_url(url):
+            return self.downloader.download(url).path
 
-        frames: List[Image] = self.retriever.retrieve(dvr.path)
-        logging.info(f"{len(frames)} frames retrieved from video file")
+        if path.exists(url):
+            return url
 
-        frames = self.resizer.resize(frames, resize_height)
-        logging.info(f"{len(frames)} frames resized to height {resize_height}")
+        raise MediaGrabberError(f'File {url} not found (not URL or existing file)')
 
-        faces: List[DetectedFaceResponse] = self.detector.detect(frames)
-        logging.info(f"{len(faces)} faces found")
 
-        self.publisher.publish(faces, path.realpath(path.dirname(dvr.path)))

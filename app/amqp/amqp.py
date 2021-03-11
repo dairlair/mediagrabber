@@ -3,9 +3,9 @@ import pika
 import logging
 from injector import Injector
 from mediagrabber.core import MediaGrabber
-from dependencies import configure
+from mediagrabber.dependencies import configure
 from mediagrabber.config import Config
-from mediagrabber.consumer import Consumer
+from app.amqp.consumer import Consumer
 
 
 def grab(service: MediaGrabber, payload: dict) -> dict:
