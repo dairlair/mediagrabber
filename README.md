@@ -22,14 +22,15 @@ Now you can download video from the website with:
 ```sh
 python mediagrabber/cli.py download "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"
 python mediagrabber/cli.py download "https://pornhub.com/view_video.php?viewkey=ph5fcea9ba0ae13"
+python mediagrabber/cli.py download "https://www.bloomberg.com/news/videos/2021-03-09/-bloomberg-the-open-full-show-03-09-2021-video"
 ```
 
 Retrieve faces from the downloaded video via:
 ```sh
-python mediagrabber/cli.py retrieve /home/dairlair/Videos/Constantine.mkv --height=360
+python mediagrabber/cli.py retrieve /home/dairlair/Videos/Constantine.mkv --resize_height=360
 ```
 
 Or download, retrieve and save faces in one command with:
 ```sh
-python mediagrabber/cli.py grab "https://pornhub.com/view_video.php?viewkey=ph5fcea9ba0ae13" --height=180
+python mediagrabber/cli.py grab "https://pornhub.com/view_video.php?viewkey=ph5fcea9ba0ae13" --resize_height=180
 ```

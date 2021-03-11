@@ -9,12 +9,14 @@ import numpy as np
 class UniqueFaceDetector(FacesDetectorInterface):
     known_encodings: List[np.array] = []
 
-    def detect(self, frames: List[Image]) -> List[DetectedFaceResponse]:
+    def detect(
+        self, frames: List[Image], number_of_upsamples=0, locate_model="fog", num_jitters=1, encode_model="small"
+    ) -> List[DetectedFaceResponse]:
         detected_faces: List[DetectedFaceResponse] = []
         for i, frame in enumerate(tqdm(frames)):
             frame_data = np.array(frame)
-            locations = face_recognition.face_locations(frame_data, 0, "fog")
-            encodings = face_recognition.face_encodings(frame_data, locations)
+            locations = face_recognition.face_locations(frame_data, number_of_upsamples, locate_model)
+            encodings = face_recognition.face_encodings(frame_data, locations, num_jitters, encode_model)
 
             # detected_faces.append(DetectedFaceResponse(f'face-{i}', frame))
 

@@ -59,18 +59,20 @@ class DetectedFaceResponse:
 
 class FacesDetectorInterface(ABC):
     @abstractmethod
-    def detect(self, frames: List[Image]) -> List[DetectedFaceResponse]:
+    def detect(
+        self,
+        frames: List[Image],
+        number_of_upsamples: int = 0,
+        locate_model: str = "fog",
+        num_jitters: int = 1,
+        encode_model: str = "small",
+    ) -> List[DetectedFaceResponse]:
         raise NotImplementedError
+
 
 class FacesPublisherInterface(ABC):
     @abstractmethod
     def publish(self, faces: List[DetectedFaceResponse], path: str):
-        raise NotImplementedError
-
-
-class StorageInterface(ABC):
-    @abstractmethod
-    def save(self, content: bytes, name: str) -> str:
         raise NotImplementedError
 
 
@@ -82,7 +84,7 @@ class MediaGrabber(ABC):
         retriever: FramesRetrieverInterface,
         resizer: FramesResizerInterface,
         detector: FacesDetectorInterface,
-        publisher: FacesPublisherInterface
+        publisher: FacesPublisherInterface,
     ):
         self.downloader = downloader
         self.retriever = retriever
@@ -90,35 +92,57 @@ class MediaGrabber(ABC):
         self.detector = detector
         self.publisher = publisher
 
-    def download(self, url: str) -> List[str]:
-        """
-        :raises: MediaGrabberError
-        """
-        return self.downloader.download(url)
+    def download(self, url: str) -> dict:
+        return self.downloader.download(url).__dict__
 
-    def retrieve(self, file: str, height: int = 360):
+    def retrieve(
+        self,
+        file: str,
+        resize_height: int = 360,
+        number_of_upsamples: int = 0,
+        locate_model: str = "fog",
+        num_jitters: int = 1,
+        encode_model: str = "small",
+    ):
+        """
+        Retrieves faces from the specified file.
+
+        Args:
+            file (str): Path to the file
+            resize_height (int, optional): Desired height for images resizing. Defaults to 360.
+            number_of_upsamples (int, optional): How many times to upsample the image looking for faces.
+                Higher numbers find smaller faces.
+            locate_model (str, optional): Which face detection model to use. "hog" is less accurate but faster on CPUs.
+                "cnn" is a more accurate deep-learning model which is GPU/CUDA accelerated (if available).
+            num_jitters (int, optional): How many times to re-sample the face when calculating encoding.
+                Higher is more accurate, but slower (i.e. 100 is 100x slower).
+            encode_model (str, optional): which model to use. "large" (default) or "small" which only returns 5 points
+                but is faster.
+        """
         frames: List[Image] = self.retriever.retrieve(file)
-        logging.info(f'{len(frames)} frames retrieved from video file')
+        logging.info(f"{len(frames)} frames retrieved from video file")
 
-        frames = self.resizer.resize(frames, height)
-        logging.info(f'{len(frames)} frames resized to height {height}')
+        frames = self.resizer.resize(frames, resize_height)
+        logging.info(f"{len(frames)} frames resized to height {resize_height}")
 
-        faces: List[DetectedFaceResponse] = self.detector.detect(frames)
-        logging.info(f'{len(faces)} faces found')
+        faces: List[DetectedFaceResponse] = self.detector.detect(
+            frames, number_of_upsamples, locate_model, num_jitters, encode_model
+        )
+        logging.info(f"{len(faces)} faces found")
 
         self.publisher.publish(faces, path.realpath(path.dirname(file)))
 
-    def grab(self, url: str, height: int = 360) -> dict:
-        dvr: DownloadedVideoResponse = self.download(url)
-        logging.info(f'{dvr.size} bytes video downloaded')
+    def grab(self, url: str, resize_height: int = 360) -> dict:
+        dvr: DownloadedVideoResponse = self.downloader.download(url)
+        logging.info(f"{dvr.size} bytes video downloaded")
 
         frames: List[Image] = self.retriever.retrieve(dvr.path)
-        logging.info(f'{len(frames)} frames retrieved from video file')
+        logging.info(f"{len(frames)} frames retrieved from video file")
 
-        frames = self.resizer.resize(frames, height)
-        logging.info(f'{len(frames)} frames resized to height {height}')
+        frames = self.resizer.resize(frames, resize_height)
+        logging.info(f"{len(frames)} frames resized to height {resize_height}")
 
         faces: List[DetectedFaceResponse] = self.detector.detect(frames)
-        logging.info(f'{len(faces)} faces found')
+        logging.info(f"{len(faces)} faces found")
 
         self.publisher.publish(faces, path.realpath(path.dirname(dvr.path)))

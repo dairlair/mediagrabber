@@ -5,7 +5,7 @@ from mediagrabber.core import MediaGrabber
 import logging
 from mediagrabber.config import Config
 
-if __name__ == "__main__":
+def main():
     # Set desired logging level
     logging.basicConfig(level=Config.log_level())
 
@@ -14,3 +14,6 @@ if __name__ == "__main__":
 
     service: MediaGrabber = injector.get(MediaGrabber)
     fire.Fire(service)
+
+if __name__ == "__main__":
+    main()
