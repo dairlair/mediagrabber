@@ -7,3 +7,4 @@ dlib==19.21.1
 face-recognition==1.3.0
 face-recognition-models==0.3.0
 numpy~=1.19.2
+av~=8.0.3
