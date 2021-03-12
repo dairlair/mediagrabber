@@ -1,4 +1,4 @@
-FROM python:3.8.6-slim-buster
+FROM dairlair/face-recognition-docker:0.0.1
 
 COPY install-packages.sh .
 RUN chmod +x ./install-packages.sh
