@@ -1,5 +1,5 @@
 from mediagrabber.core import MediaGrabberError
-from mediagrabber.consumer import MessageProcessor
+from app.amqp.consumer import MessageProcessor
 
 
 # When message processed successfully
