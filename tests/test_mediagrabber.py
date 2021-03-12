@@ -1,6 +1,6 @@
 from mediagrabber.core import MediaGrabber
 from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
-from mediagrabber.retriever.decord import DecordFacesRetriever
+from mediagrabber.retriever.av import AvFramesRetriever
 from mediagrabber.resizer.default import DefaultFramesResizer
 from mediagrabber.detector.unique import UniqueFaceDetector
 from mediagrabber.publisher.file import FileFacePublisher
@@ -9,7 +9,7 @@ from mediagrabber.publisher.file import FileFacePublisher
 def test_constructor():
     # When
     downloader = YoutubedlVideoDownloader('')
-    retriever = DecordFacesRetriever()
+    retriever = AvFramesRetriever()
     resizer = DefaultFramesResizer()
     detector = UniqueFaceDetector()
     publisher = FileFacePublisher()

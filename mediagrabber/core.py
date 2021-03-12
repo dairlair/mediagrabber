@@ -76,7 +76,7 @@ class FacesPublisherInterface(ABC):
         raise NotImplementedError
 
 
-def is_url(self, url: str) -> bool:
+def is_url(url: str) -> bool:
     return url.startswith(("http://", "https://"))
 
 
@@ -123,6 +123,8 @@ class MediaGrabber(ABC):
             encode_model (str, optional): which model to use. "large" (default) or "small" which only returns 5 points
                 but is faster.
         """
+        filename = self.get_file_path(filename)
+
         frames: List[Image] = self.retriever.retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
 
@@ -138,7 +140,7 @@ class MediaGrabber(ABC):
         self.publisher.publish(faces, path.realpath(path.dirname(filename)))
 
     def get_file_path(self, url: str) -> DownloadedVideoResponse:
-        if self.is_url(url):
+        if is_url(url):
             return self.downloader.download(url).path
 
         if path.exists(url):

@@ -8,7 +8,7 @@ from PIL.Image import Image
 class AvFramesRetriever(FramesRetrieverInterface):
     """
     Retrieve images with faces from the give video file.
-    Uses decord library to read the file.
+    Uses av library to read the file.
     """
 
     def retrieve(self, file: str) -> List[Image]:
@@ -19,6 +19,7 @@ class AvFramesRetriever(FramesRetrieverInterface):
             stream.codec_context.skip_frame = "NONKEY"
 
             for frame in tqdm(container.decode(stream)):
+                print(type(frame))
                 frames.append(frame.to_image())
 
         return frames

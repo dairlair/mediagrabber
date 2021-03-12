@@ -32,5 +32,6 @@ python app/cli/cli.py retrieve /home/dairlair/Videos/Constantine.mkv --resize_he
 
 Or download, retrieve and save faces in one command with (just specify URL instead of existing file):
 ```sh
+python app/cli/cli.py retrieve "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"
 python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fcea9ba0ae13" --resize_height=180
 ```
