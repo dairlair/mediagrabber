@@ -9,6 +9,11 @@ class FileFacePublisher(FacesPublisherInterface):
     Args:
         FacesPublisherInterface ([List[DetectedFaceResponse]]): The faces list
     """
-    def publish(self, faces: List[DetectedFaceResponse], directory: str):
+    def publish(self, faces: List[DetectedFaceResponse], directory: str) -> List[dict]:
+        filenames = []
         for face in faces:
-            face.img.save(path.join(directory, face.id + '.png'))
+            filename: str = path.join(directory, face.id + '.png')
+            face.img.save(filename)
+            filenames.append(filename)
+
+        return filenames

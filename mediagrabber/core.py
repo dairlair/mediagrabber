@@ -72,7 +72,7 @@ class FacesDetectorInterface(ABC):
 
 class FacesPublisherInterface(ABC):
     @abstractmethod
-    def publish(self, faces: List[DetectedFaceResponse], path: str):
+    def publish(self, faces: List[DetectedFaceResponse], path: str) -> List[dict]:
         raise NotImplementedError
 
 
@@ -137,7 +137,7 @@ class MediaGrabber(ABC):
         )
         logging.info(f"{len(faces)} faces found")
 
-        self.publisher.publish(faces, path.realpath(path.dirname(filename)))
+        return self.publisher.publish(faces, path.realpath(path.dirname(filename)))
 
     def get_file_path(self, url: str) -> DownloadedVideoResponse:
         if is_url(url):

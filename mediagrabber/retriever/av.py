@@ -18,8 +18,7 @@ class AvFramesRetriever(FramesRetrieverInterface):
             stream = container.streams.video[0]
             stream.codec_context.skip_frame = "NONKEY"
 
-            for frame in tqdm(container.decode(stream)):
-                print(type(frame))
+            for frame in tqdm(container.decode(stream), 'Frames retrieving'):
                 frames.append(frame.to_image())
 
         return frames

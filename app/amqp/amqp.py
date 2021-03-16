@@ -1,30 +1,20 @@
 # RabbitMQ based application for MediaGrabber
 import pika
 import logging
+from typing import List
 from injector import Injector
 from mediagrabber.core import MediaGrabber
 from mediagrabber.dependencies import configure
 from mediagrabber.config import Config
-from app.amqp.consumer import Consumer
+from app.amqp.consumer import Consumer, MessageProcessorInterface
 
 
-def retrieve(service: MediaGrabber, payload: dict) -> dict:
-    urls = service.retrieve(payload["url"])
-    return {"urls": urls}
-
-class MessageProcessor(object):
-    def __init__(self, service: MediaGrabber, callback):
+class MediaGrabberRetriveProcessor(MessageProcessorInterface):
+    def __init__(self, service: MediaGrabber) -> None:
         self.service = service
-        self.callback = callback
 
-    # Returns dict when message is processed (successfully or with errors).
-    def process(self, payload: dict) -> Optional[dict]:
-        try:
-            response = self.callback(self.service, payload)
-            return {**payload, **response, "success": True}
-        except MediaGrabberError as err:
-            logging.error(err)
-            return {**payload, "success": False, "error": err.__dict__}
+    def process(self, payload: dict) -> List[dict]:
+        return self.service.retrieve(payload["url"])
 
 
 if __name__ == "__main__":
@@ -41,8 +31,8 @@ if __name__ == "__main__":
     channel.basic_qos(prefetch_count=1)
 
     # Create consumer
-    service: MediaGrabber = injector.get(MediaGrabber)
-    Consumer(service, channel, Config.queue_in(), Config.queue_out(), retrieve)
+    processor = MediaGrabberRetriveProcessor(injector.get(MediaGrabber))
+    Consumer(channel, Config.queue_in(), Config.queue_out(), processor)
 
     try:
         channel.start_consuming()

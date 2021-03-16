@@ -13,7 +13,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
         self, frames: List[Image], number_of_upsamples=0, locate_model="fog", num_jitters=1, encode_model="small"
     ) -> List[DetectedFaceResponse]:
         detected_faces: List[DetectedFaceResponse] = []
-        for i, frame in enumerate(tqdm(frames, desk='Faces detection')):
+        for i, frame in enumerate(tqdm(frames, 'Faces detection')):
             frame_data = np.array(frame)
             locations = face_recognition.face_locations(frame_data, number_of_upsamples, locate_model)
             encodings = face_recognition.face_encodings(frame_data, locations, num_jitters, encode_model)
