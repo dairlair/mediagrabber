@@ -14,7 +14,7 @@ class MediaGrabberRetriveProcessor(MessageProcessorInterface):
         self.service = service
 
     def process(self, payload: dict) -> List[dict]:
-        return self.service.retrieve(payload["url"])
+        return self.service.retrieve(**payload)
 
 
 if __name__ == "__main__":

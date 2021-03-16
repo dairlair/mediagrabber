@@ -66,6 +66,7 @@ class FacesDetectorInterface(ABC):
         locate_model: str = "fog",
         num_jitters: int = 1,
         encode_model: str = "small",
+        tolerance: float = 0.6,
     ) -> List[DetectedFaceResponse]:
         raise NotImplementedError
 
@@ -101,12 +102,13 @@ class MediaGrabber(ABC):
 
     def retrieve(
         self,
-        filename: str,
+        url: str,
         resize_height: int = None,
         number_of_upsamples: int = 0,
         locate_model: str = "fog",
         num_jitters: int = 1,
         encode_model: str = "small",
+        tolerance: float = 0.6,
     ):
         """
         Retrieves faces from the specified file.
@@ -122,8 +124,10 @@ class MediaGrabber(ABC):
                 Higher is more accurate, but slower (i.e. 100 is 100x slower).
             encode_model (str, optional): which model to use. "large" (default) or "small" which only returns 5 points
                 but is faster.
+            tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
+                0.6 is typical best performance.
         """
-        filename = self.get_file_path(filename)
+        filename = self.get_file_path(url)
 
         frames: List[Image] = self.retriever.retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
@@ -133,7 +137,7 @@ class MediaGrabber(ABC):
             logging.info(f"{len(frames)} frames resized to height {resize_height}")
 
         faces: List[DetectedFaceResponse] = self.detector.detect(
-            frames, number_of_upsamples, locate_model, num_jitters, encode_model
+            frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance
         )
         logging.info(f"{len(faces)} faces found")
 
