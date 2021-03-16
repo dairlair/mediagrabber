@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import logging
 from os import path
 from typing import List
-from PIL.Image import Image, fromarray
+from PIL.Image import Image
 from injector import inject
 import os
 
@@ -146,6 +146,4 @@ class MediaGrabber(ABC):
         if path.exists(url):
             return url
 
-        raise MediaGrabberError(f'File {url} not found (not URL or existing file)')
-
-
+        raise MediaGrabberError(f"File {url} not found (not URL or existing file)")
