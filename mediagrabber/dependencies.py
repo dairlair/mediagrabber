@@ -1,3 +1,4 @@
+from mediagrabber.publisher.base64 import Base64FacePublisher
 from mediagrabber.publisher.file import FileFacePublisher
 from mediagrabber.detector.unique import UniqueFaceDetector
 from mediagrabber.resizer.default import DefaultFramesResizer
@@ -46,7 +47,7 @@ def detector() -> FacesDetectorInterface:
 
 
 def publisher() -> FacesPublisherInterface:
-    return FileFacePublisher()
+    return Base64FacePublisher()
 
 
 def amqp() -> BlockingConnection:
