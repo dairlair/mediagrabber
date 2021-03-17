@@ -37,17 +37,13 @@ class Consumer(object):
         logging.info(f"Incoming message received: {body}")
         payload = json.loads(body)
 
-        print("Income:")
-        print(payload)
-
         # We process this message through processor
         for message in self.processor.process(payload):
-            body = json.dumps(message)
+            # Merge incoming payload into the each resulting message
+            response = {**payload, **message}
+            body = json.dumps(response)
             logging.info(f"Outcoming message prepared: {body}")
             self.channel.basic_publish("", self.queue_out, body)
-
-            # print("Outcome:")
-            # print(message)
 
         # We have processed all the messages from the processor, now we ack incoming message
         ch.basic_ack(delivery_tag=method.delivery_tag)
