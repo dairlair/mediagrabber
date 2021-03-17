@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 from os import path
-from typing import List
+from typing import List, Optional
 from PIL.Image import Image
 from injector import inject
 import os
@@ -21,7 +21,8 @@ class DownloadedVideoResponse:
         self.output = output
         self.path = path
         self.duration = duration
-        self.size = os.path.getsize(path)
+        if path is not None:
+            self.size = os.path.getsize(path)
 
 
 class VideoDownloaderInterface(ABC):
@@ -109,7 +110,7 @@ class MediaGrabber(ABC):
         num_jitters: int = 1,
         encode_model: str = "small",
         tolerance: float = 0.6,
-    ):
+    ) -> List[dict]:
         """
         Retrieves faces from the specified file.
 
@@ -128,6 +129,8 @@ class MediaGrabber(ABC):
                 0.6 is typical best performance.
         """
         filename = self.get_file_path(url)
+        if filename is None:
+            return [{"success": False, "resolution": f"File [{url}] not found"}]
 
         frames: List[Image] = self.retriever.retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
@@ -143,7 +146,7 @@ class MediaGrabber(ABC):
 
         return self.publisher.publish(faces, path.realpath(path.dirname(filename)))
 
-    def get_file_path(self, url: str) -> DownloadedVideoResponse:
+    def get_file_path(self, url: str) -> str:
         if is_url(url):
             return self.downloader.download(url).path
 
