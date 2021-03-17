@@ -18,7 +18,8 @@ class UniqueFaceDetector(FacesDetectorInterface):
         encode_model: str = "small",
         tolerance: float = 0.6,
     ) -> List[DetectedFaceResponse]:
-        print(f"Tolerance: {tolerance}")
+        self.known_encodings = []
+
         detected_faces: List[DetectedFaceResponse] = []
         for i, frame in enumerate(tqdm(frames, "Faces detection")):
             frame_data = np.array(frame)

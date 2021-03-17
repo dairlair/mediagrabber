@@ -14,7 +14,10 @@ class MediaGrabberRetriveProcessor(MessageProcessorInterface):
         self.service = service
 
     def process(self, payload: dict) -> List[dict]:
-        return self.service.retrieve(**payload)
+        # Payload may contains properties, not intended to be passed to the retrieve function, lets filter them.
+        args = {k: v for k, v in payload.items() if k in self.service.retrieve.__code__.co_varnames}
+
+        return self.service.retrieve(**args)
 
 
 if __name__ == "__main__":

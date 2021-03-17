@@ -2,6 +2,7 @@ from typing import List
 from mediagrabber.core import DetectedFaceResponse, FacesPublisherInterface
 from io import BytesIO
 from base64 import b64encode
+from PIL.Image import Image
 
 
 class Base64FacePublisher(FacesPublisherInterface):
@@ -15,9 +16,11 @@ class Base64FacePublisher(FacesPublisherInterface):
     def publish(self, faces: List[DetectedFaceResponse], directory: str) -> List[dict]:
         messages = []
         for face in faces:
-            buffer = BytesIO()
-            face.img.save(buffer, format="jpeg")
-            content_base_64 = "data:image/jpeg;base64," + b64encode(buffer.getvalue()).decode()
-            messages.append({"contentBase64": content_base_64})
+            messages.append({"contentBase64": self.convert_image_to_base64(face.img)})
 
         return messages
+
+    def convert_image_to_base64(self, img: Image) -> str:
+        buffer = BytesIO()
+        img.save(buffer, format="webp")
+        return "data:image/webp;base64," + b64encode(buffer.getvalue()).decode()

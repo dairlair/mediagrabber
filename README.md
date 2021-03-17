@@ -7,6 +7,14 @@ The cloud native application for media grabbing. The application listens the spe
 {"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
 ```
 
+You can run the faces retrieving with customized params:
+```json
+{
+    "url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309",
+    "tolerance": 0.45
+}
+```
+
 ## Run, using CLI interface
 
 Before using the MediaGrabber in the cloned repository you need to install [youtube-dl](https://github.com/ytdl-org/youtube-dl#installation).

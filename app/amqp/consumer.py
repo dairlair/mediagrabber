@@ -46,8 +46,8 @@ class Consumer(object):
             logging.info(f"Outcoming message prepared: {body}")
             self.channel.basic_publish("", self.queue_out, body)
 
-            print("Outcome:")
-            print(message)
+            # print("Outcome:")
+            # print(message)
 
         # We have processed all the messages from the processor, now we ack incoming message
         ch.basic_ack(delivery_tag=method.delivery_tag)
