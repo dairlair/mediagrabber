@@ -1,6 +1,5 @@
 from typing import List
-from mediagrabber.core import FacesDetectorInterface, DetectedFaceResponse
-from PIL.Image import Image
+from mediagrabber.core import FacesDetectorInterface, DetectedFaceResponse, RetrievedFrameResponse
 from tqdm import tqdm
 import face_recognition
 import numpy as np
@@ -11,7 +10,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
 
     def detect(
         self,
-        frames: List[Image],
+        frames: List[RetrievedFrameResponse],
         number_of_upsamples: int = 0,
         locate_model: str = "fog",
         num_jitters: int = 1,
@@ -22,9 +21,10 @@ class UniqueFaceDetector(FacesDetectorInterface):
 
         detected_faces: List[DetectedFaceResponse] = []
         for i, frame in enumerate(tqdm(frames, "Faces detection")):
-            frame_data = np.array(frame)
-            locations = face_recognition.face_locations(frame_data, number_of_upsamples, locate_model)
-            encodings = face_recognition.face_encodings(frame_data, locations, num_jitters, encode_model)
+            assert(isinstance(frame, RetrievedFrameResponse))
+            image = np.array(frame.img)
+            locations = face_recognition.face_locations(image, number_of_upsamples, locate_model)
+            encodings = face_recognition.face_encodings(image, locations, num_jitters, encode_model)
 
             j = 0
             for (top, right, bottom, left), encoding in zip(locations, encodings):
@@ -33,8 +33,8 @@ class UniqueFaceDetector(FacesDetectorInterface):
                     continue
 
                 # Crop the face from frame and add to results
-                face = frame.crop(box=(left, top, right, bottom))
-                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face))
+                face = frame.img.crop(box=(left, top, right, bottom))
+                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face, frame.ts))
                 j += 1
 
             # @TODO Add frame saving if it is required

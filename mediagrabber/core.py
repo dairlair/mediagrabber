@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 from os import path
-from typing import List, Optional
+from typing import List
 from PIL.Image import Image
 from injector import inject
 import os
@@ -31,9 +31,15 @@ class VideoDownloaderInterface(ABC):
         raise NotImplementedError
 
 
+@dataclass
+class RetrievedFrameResponse:
+    ts: float
+    img: Image
+
+
 class FramesRetrieverInterface(ABC):
     @abstractmethod
-    def retrieve(self, file: str) -> List[Image]:
+    def retrieve(self, file: str) -> List[RetrievedFrameResponse]:
         """
         Reads the video file and retrieves frames in the Pillow library format.
 
@@ -41,28 +47,29 @@ class FramesRetrieverInterface(ABC):
             file (str): Path to the file
 
         Returns:
-            List[Image]: List of PIL Images
+            List[RetrievedFrameResponse]: List of the retrieved frames
         """
         raise NotImplementedError
 
 
 class FramesResizerInterface(ABC):
     @abstractmethod
-    def resize(self, frames: List[Image], height: int = 360) -> List[Image]:
+    def resize(self, frames: List[RetrievedFrameResponse], height: int = 360) -> List[RetrievedFrameResponse]:
         raise NotImplementedError
 
 
 @dataclass
 class DetectedFaceResponse:
     id: str
-    img: Image  # PIL.Image.Image object
+    img: Image
+    ts: float
 
 
 class FacesDetectorInterface(ABC):
     @abstractmethod
     def detect(
         self,
-        frames: List[Image],
+        frames: List[RetrievedFrameResponse],
         number_of_upsamples: int = 0,
         locate_model: str = "fog",
         num_jitters: int = 1,
@@ -132,7 +139,7 @@ class MediaGrabber(ABC):
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
-        frames: List[Image] = self.retriever.retrieve(filename)
+        frames: List[RetrievedFrameResponse] = self.retriever.retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
 
         if resize_height is not None:
