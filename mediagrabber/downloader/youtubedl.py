@@ -1,7 +1,4 @@
-from mediagrabber.framer import (
-    VideoDownloaderInterface,
-    VideoDownloadedResponse,
-)
+from mediagrabber.core import VideoDownloaderInterface, DownloadedVideoResponse
 from mediagrabber.core import MediaGrabberError
 import subprocess
 import os
@@ -12,20 +9,23 @@ import time
 
 
 class YoutubedlVideoDownloader(VideoDownloaderInterface):
-    def download(
-        self, workdir: str, video_page_url: str
-    ) -> VideoDownloadedResponse:
+    workdir: str
+
+    def __init__(self, workdir: str) -> None:
+        self.workdir = workdir
+
+    def download(self, video_page_url: str) -> DownloadedVideoResponse:
         """
         Downloads videos from the specified page and stores the file
         in the `workdirectory`.
         Returns the full path to the downloaded video file.
         """
-        video_directory = self.create_video_directory(workdir, video_page_url)
+        video_directory = self.create_video_directory(video_page_url)
         path = os.path.join(video_directory, "source.%(ext)s")
         command = [
             "youtube-dl",
             "-f",
-            "bestvideo[height<=480]+bestaudio/best[height<=480]",
+            "bestvideo[height<=360]+bestaudio/best[height<=360]",
             video_page_url,
             "-o",
             path,
@@ -43,7 +43,6 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         output: str = ""
         for line in process.stdout:
             logging.info(line)
-            # print("Output line: " + line)
             output += line
 
         process.wait()
@@ -51,7 +50,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         # Wait for date to terminate. Get return returncode ##
         return_code = process.wait()
         if return_code != 0:
-            return VideoDownloadedResponse(return_code, output, None, None)
+            return DownloadedVideoResponse(return_code, output, None, None)
 
         # Try to find downloadded file
         mask = os.path.join(video_directory, "source.*")
@@ -61,13 +60,11 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
 
         duration = time.time() - started_at
 
-        return VideoDownloadedResponse(
-            process.returncode, output, str(path), duration
-        )
+        return DownloadedVideoResponse(process.returncode, output, str(path), duration)
 
-    def create_video_directory(self, workdir: str, video_page_url: str) -> str:
+    def create_video_directory(self, video_page_url: str) -> str:
         hash = hashlib.md5(video_page_url.encode("utf-8")).hexdigest()
-        directory = os.path.join(workdir, hash)
+        directory = os.path.join(self.workdir, hash)
 
         try:
             os.mkdir(directory)

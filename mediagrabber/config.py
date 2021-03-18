@@ -18,7 +18,7 @@ class Config:
     # AMQP settings
     @staticmethod
     def amqp_url() -> str:
-        default = "amqp://guest:guest@host.docker.internal:5672/%2f"
+        default = "amqp://guest:guest@localhost:5672/%2f"
         return os.environ.get("AMQP_URL", default)
 
     @staticmethod
@@ -28,27 +28,6 @@ class Config:
     @staticmethod
     def queue_out() -> str:
         return os.environ.get("AMQP_OUT", "mediagrabber.out")
-
-    # AWS Settings
-    @staticmethod
-    def aws_access_key_id() -> str:
-        return Config.require("AWS_ACCESS_KEY_ID")
-
-    @staticmethod
-    def aws_secret_access_key() -> str:
-        return Config.require("AWS_SECRET_ACCESS_KEY")
-
-    @staticmethod
-    def aws_region() -> str:
-        return Config.require("AWS_DEFAULT_REGION")
-
-    @staticmethod
-    def aws_bucket() -> str:
-        return Config.require("AWS_BUCKET")
-
-    @staticmethod
-    def meter_dsn() -> str:
-        return os.environ.get("METER_DSN")
 
     @staticmethod
     def require(variable) -> str:

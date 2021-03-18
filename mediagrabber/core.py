@@ -1,63 +1,163 @@
 from abc import ABC, abstractmethod
-from mediagrabber.meter.meter import MeterInterface, Metric
+from dataclasses import dataclass
+import logging
+from os import path
 from typing import List
-import hashlib
+from PIL.Image import Image
 from injector import inject
+import os
 
 
+@dataclass
 class MediaGrabberError(Exception):
-    """
-    Just a general error for MediaGrabber
-    """
-
-    def __init__(self, data: dict):
-        self.data = data
+    data: dict
 
 
-class StorageInterface(ABC):
+class DownloadedVideoResponse:
+    size: int = None
+
+    def __init__(self, code: int, output: str, path: str, duration: str):
+        self.code = code
+        self.output = output
+        self.path = path
+        self.duration = duration
+        if path is not None:
+            self.size = os.path.getsize(path)
+
+
+class VideoDownloaderInterface(ABC):
     @abstractmethod
-    def save(self, content: bytes, name: str) -> str:
+    def download(self, video_page_url: str) -> DownloadedVideoResponse:
         raise NotImplementedError
 
 
-class FramerInterface(ABC):
-    """
-    :raises: MediaGrabberError when url can not be downloaded
-    """
+@dataclass
+class RetrievedFrameResponse:
+    ts: float
+    img: Image
 
+
+class FramesRetrieverInterface(ABC):
     @abstractmethod
-    def get_frames(self, video_page_url: str) -> List[bytes]:
+    def retrieve(self, file: str) -> List[RetrievedFrameResponse]:
+        """
+        Reads the video file and retrieves frames in the Pillow library format.
+
+        Args:
+            file (str): Path to the file
+
+        Returns:
+            List[RetrievedFrameResponse]: List of the retrieved frames
+        """
         raise NotImplementedError
+
+
+class FramesResizerInterface(ABC):
+    @abstractmethod
+    def resize(self, frames: List[RetrievedFrameResponse], height: int = 360) -> List[RetrievedFrameResponse]:
+        raise NotImplementedError
+
+
+@dataclass
+class DetectedFaceResponse:
+    id: str
+    img: Image
+    ts: float
+
+
+class FacesDetectorInterface(ABC):
+    @abstractmethod
+    def detect(
+        self,
+        frames: List[RetrievedFrameResponse],
+        number_of_upsamples: int = 0,
+        locate_model: str = "fog",
+        num_jitters: int = 1,
+        encode_model: str = "small",
+        tolerance: float = 0.6,
+    ) -> List[DetectedFaceResponse]:
+        raise NotImplementedError
+
+
+class FacesPublisherInterface(ABC):
+    @abstractmethod
+    def publish(self, faces: List[DetectedFaceResponse], path: str) -> List[dict]:
+        raise NotImplementedError
+
+
+def is_url(url: str) -> bool:
+    return url.startswith(("http://", "https://"))
 
 
 class MediaGrabber(ABC):
-    meter: MeterInterface
-
     @inject
-    def __init__(self, framer: FramerInterface, storage: StorageInterface, meter: MeterInterface):
-        self.video_frames_retriever = framer
-        self.storage = storage
-        self.meter = meter
+    def __init__(
+        self,
+        downloader: VideoDownloaderInterface,
+        retriever: FramesRetrieverInterface,
+        resizer: FramesResizerInterface,
+        detector: FacesDetectorInterface,
+        publisher: FacesPublisherInterface,
+    ):
+        self.downloader = downloader
+        self.retriever = retriever
+        self.resizer = resizer
+        self.detector = detector
+        self.publisher = publisher
 
-    """
-    :raises: MediaGrabberError
-    """
+    def download(self, url: str) -> dict:
+        return self.downloader.download(url).__dict__
 
-    def grab(self, url: str) -> List[str]:
-        frames = self.video_frames_retriever.get_frames(url)
-        frame_urls: List[str] = []
-        hash = hashlib.md5(url.encode("utf-8")).hexdigest()
-        for i, content in enumerate(frames):
-            name = f"{hash}-{i}.jpg"
+    def retrieve(
+        self,
+        url: str,
+        resize_height: int = None,
+        number_of_upsamples: int = 0,
+        locate_model: str = "fog",
+        num_jitters: int = 1,
+        encode_model: str = "small",
+        tolerance: float = 0.6,
+    ) -> List[dict]:
+        """
+        Retrieves faces from the specified file.
 
-            frame_url = self.save(content, name)
+        Args:
+            file (str): Path to the file
+            resize_height (int, optional): Desired height for images resizing.
+            number_of_upsamples (int, optional): How many times to upsample the image looking for faces.
+                Higher numbers find smaller faces.
+            locate_model (str, optional): Which face detection model to use. "hog" is less accurate but faster on CPUs.
+                "cnn" is a more accurate deep-learning model which is GPU/CUDA accelerated (if available).
+            num_jitters (int, optional): How many times to re-sample the face when calculating encoding.
+                Higher is more accurate, but slower (i.e. 100 is 100x slower).
+            encode_model (str, optional): which model to use. "large" (default) or "small" which only returns 5 points
+                but is faster.
+            tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
+                0.6 is typical best performance.
+        """
+        filename = self.get_file_path(url)
+        if filename is None:
+            return [{"success": False, "resolution": f"File [{url}] not found"}]
 
-            frame_urls.append(frame_url)
+        frames: List[RetrievedFrameResponse] = self.retriever.retrieve(filename)
+        logging.info(f"{len(frames)} frames retrieved from video file")
 
-        return frame_urls
+        if resize_height is not None:
+            frames = self.resizer.resize(frames, resize_height)
+            logging.info(f"{len(frames)} frames resized to height {resize_height}")
 
-    def save(self, content: bytes, name: str) -> str:
-        def fn():
-            return self.storage.save(content, name)
+        faces: List[DetectedFaceResponse] = self.detector.detect(
+            frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance
+        )
+        logging.info(f"{len(faces)} faces found")
 
-        return self.meter.measure('operation', fn, {'type': 'file_uploaded_to_object_storage'}, {'size': len(content)})
+        return self.publisher.publish(faces, path.realpath(path.dirname(filename)))
+
+    def get_file_path(self, url: str) -> str:
+        if is_url(url):
+            return self.downloader.download(url).path
+
+        if path.exists(url):
+            return url
+
+        raise MediaGrabberError(f"File {url} not found (not URL or existing file)")
