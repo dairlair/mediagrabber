@@ -22,6 +22,8 @@ class Base64FacePublisher(FacesPublisherInterface):
                     "faceId": face.id,
                     "contentBase64": self.convert_image_to_base64(face.img),
                     "ts": face.ts,
+                    "pts": face.pts,
+                    "box": face.box,
                     "success": True,
                 }
             )

@@ -21,7 +21,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
 
         detected_faces: List[DetectedFaceResponse] = []
         for i, frame in enumerate(tqdm(frames, "Faces detection")):
-            assert(isinstance(frame, RetrievedFrameResponse))
+            assert isinstance(frame, RetrievedFrameResponse)
             image = np.array(frame.img)
             locations = face_recognition.face_locations(image, number_of_upsamples, locate_model)
             encodings = face_recognition.face_encodings(image, locations, num_jitters, encode_model)
@@ -34,7 +34,8 @@ class UniqueFaceDetector(FacesDetectorInterface):
 
                 # Crop the face from frame and add to results
                 face = frame.img.crop(box=(left, top, right, bottom))
-                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face, frame.ts))
+                box = self.create_box(left, top, right, bottom)
+                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face, frame.ts, frame.pts, box))
                 j += 1
 
             # @TODO Add frame saving if it is required
@@ -48,3 +49,6 @@ class UniqueFaceDetector(FacesDetectorInterface):
 
         self.known_encodings.append(encoding)
         return False
+
+    def create_box(self, left, top, right, bottom) -> dict:
+        return {"left": left, "top": top, "right": right, "bottom": bottom}

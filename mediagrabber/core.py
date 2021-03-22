@@ -34,6 +34,7 @@ class VideoDownloaderInterface(ABC):
 @dataclass
 class RetrievedFrameResponse:
     ts: float
+    pts: int
     img: Image
 
 
@@ -63,6 +64,8 @@ class DetectedFaceResponse:
     id: str
     img: Image
     ts: float
+    pts: int
+    box: dict
 
 
 class FacesDetectorInterface(ABC):

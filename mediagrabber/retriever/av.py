@@ -19,6 +19,6 @@ class AvFramesRetriever(FramesRetrieverInterface):
 
             for frame in tqdm(container.decode(stream), "Frames retrieving"):
                 ts: float = float(frame.pts * stream.time_base)
-                frames.append(RetrievedFrameResponse(ts=ts, img=frame.to_image()))
+                frames.append(RetrievedFrameResponse(ts=ts, pts=frame.pts, img=frame.to_image()))
 
         return frames
