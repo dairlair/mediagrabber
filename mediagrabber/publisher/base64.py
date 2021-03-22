@@ -16,8 +16,17 @@ class Base64FacePublisher(FacesPublisherInterface):
     def publish(self, faces: List[DetectedFaceResponse], directory: str) -> List[dict]:
         messages = []
         for face in faces:
-            assert(isinstance(face, DetectedFaceResponse))
-            messages.append({"faceId": face.id, "contentBase64": self.convert_image_to_base64(face.img), "ts": face.ts})
+            assert isinstance(face, DetectedFaceResponse)
+            messages.append(
+                {
+                    "faceId": face.id,
+                    "contentBase64": self.convert_image_to_base64(face.img),
+                    "ts": face.ts,
+                    "pts": face.pts,
+                    "box": face.box,
+                    "success": True,
+                }
+            )
 
         return messages
 
