@@ -43,3 +43,9 @@ Or download, retrieve and save faces in one command with (just specify URL inste
 python app/cli/cli.py retrieve "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"
 python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fcea9ba0ae13" --resize_height=180
 ```
+
+### Download video, retrieve faces and calculate embeddings
+
+```
+python app/cli/cli.py memorize "https://rt.pornhub.com/view_video.php?viewkey=ph5d89137ba208c"
+```
