@@ -35,7 +35,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
                 # Crop the face from frame and add to results
                 face = frame.img.crop(box=(left, top, right, bottom))
                 box = self.create_box(left, top, right, bottom)
-                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face, frame.ts, frame.pts, box))
+                detected_faces.append(DetectedFaceResponse(f"face-{i}-{j}", face, frame.ts, frame.pts, box, encoding))
                 j += 1
 
             # @TODO Add frame saving if it is required

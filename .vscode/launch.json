@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -19,6 +20,21 @@
             "args": [
                 "retrieve",
                 "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "CLI Memorize",
+            "type": "python",
+            "request": "launch",
+            "program": "./app/cli/cli.py",
+            "args": [
+                "memorize",
+                "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad", 
+                "video", 
+                "1",
+                "something",
+                "publication",
             ],
             "console": "integratedTerminal"
         },

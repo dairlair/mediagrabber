@@ -6,6 +6,8 @@ from typing import List
 from PIL.Image import Image
 from injector import inject
 import os
+import numpy as np
+from elasticsearch import Elasticsearch
 
 
 @dataclass
@@ -66,6 +68,7 @@ class DetectedFaceResponse:
     ts: float
     pts: int
     box: dict
+    encoding: np.array
 
 
 class FacesDetectorInterface(ABC):
@@ -142,6 +145,54 @@ class MediaGrabber(ABC):
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
+        faces = self.get_faces(
+            filename, resize_height, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance
+        )
+        logging.info(f"{len(faces)} faces found")
+
+        return self.publisher.publish(faces, path.realpath(path.dirname(filename)))
+
+    def memorize(
+        self,
+        url: str,
+        type: str,
+        entity: str,
+        id: str,
+        tags: List[str],
+        tolerance: float = 0.45,
+    ):
+        filename = self.get_file_path(url)
+        if filename is None:
+            return [{"success": False, "resolution": f"File [{url}] not found"}]
+
+        faces = self.get_faces(filename=filename, tolerance=tolerance)
+        logging.info(f"{len(faces)} faces found")
+
+        print(faces)
+        # encodings_ids = self.vector_storage.save_faces(faces)
+        es = Elasticsearch([{'host': 'localhost', 'port': '9200'}])
+        for face in faces:
+            body = {
+                'externalEntity': entity,
+                'externalEntityId': id,
+                'tags': tags,
+                'encoding': face.encoding,
+            }
+            es.index(index='faces', body=body)
+
+        encodings_ids = []
+        return [{"success": True, "resolution": f"File [{url}] memorized successfully", "encodings": encodings_ids}]
+
+    def get_faces(
+        self,
+        filename: str,
+        resize_height: int = None,
+        number_of_upsamples: int = 0,
+        locate_model: str = "fog",
+        num_jitters: int = 1,
+        encode_model: str = "small",
+        tolerance: float = 0.6,
+    ) -> List[DetectedFaceResponse]:
         frames: List[RetrievedFrameResponse] = self.retriever.retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
 
@@ -149,12 +200,7 @@ class MediaGrabber(ABC):
             frames = self.resizer.resize(frames, resize_height)
             logging.info(f"{len(frames)} frames resized to height {resize_height}")
 
-        faces: List[DetectedFaceResponse] = self.detector.detect(
-            frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance
-        )
-        logging.info(f"{len(faces)} faces found")
-
-        return self.publisher.publish(faces, path.realpath(path.dirname(filename)))
+        return self.detector.detect(frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance)
 
     def get_file_path(self, url: str) -> str:
         if is_url(url):
