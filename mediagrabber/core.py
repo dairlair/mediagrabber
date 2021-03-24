@@ -7,7 +7,6 @@ from PIL.Image import Image
 from injector import inject
 import os
 import numpy as np
-from elasticsearch import Elasticsearch
 
 
 @dataclass
@@ -170,7 +169,6 @@ class MediaGrabber(ABC):
 
         print(faces)
         # encodings_ids = self.vector_storage.save_faces(faces)
-        es = Elasticsearch([{'host': 'localhost', 'port': '9200'}])
         for face in faces:
             body = {
                 'externalEntity': entity,
@@ -178,7 +176,7 @@ class MediaGrabber(ABC):
                 'tags': tags,
                 'encoding': face.encoding,
             }
-            es.index(index='faces', body=body)
+            # es.index(index='faces', body=body)
 
         encodings_ids = []
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "encodings": encodings_ids}]
