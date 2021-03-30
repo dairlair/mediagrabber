@@ -15,6 +15,12 @@ class Config:
     def log_level() -> str:
         return os.environ.get("LOG_LEVEL", "WARNING")
 
+    # RDBMS DSN
+    @staticmethod
+    def dsn() -> str:
+        default = "postgresql://mediagrabber:mediagrabber@localhost:5432/mediagrabber"
+        return os.environ.get("DSN", default)
+
     # AMQP settings
     @staticmethod
     def amqp_url() -> str:

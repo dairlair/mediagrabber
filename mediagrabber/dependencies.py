@@ -1,3 +1,4 @@
+from mediagrabber.storage.postgres import PostgreSQLStorage
 from mediagrabber.publisher.base64 import Base64FacePublisher
 from mediagrabber.publisher.file import FileFacePublisher
 from mediagrabber.detector.unique import UniqueFaceDetector
@@ -10,6 +11,7 @@ from mediagrabber.core import (
     MediaGrabber,
     FramesRetrieverInterface,
     FacesPublisherInterface,
+    StorageInterface,
 )
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
@@ -18,6 +20,7 @@ from mediagrabber.core import VideoDownloaderInterface
 from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
 import sys
 import logging
+from urllib.parse import urlparse, ParseResult
 
 
 def configure(binder: Binder) -> None:
@@ -28,6 +31,7 @@ def configure(binder: Binder) -> None:
     binder.bind(BlockingConnection, amqp, scope=singleton)
     binder.bind(FacesDetectorInterface, to=detector, scope=singleton)
     binder.bind(FacesPublisherInterface, to=publisher, scope=singleton)
+    binder.bind(StorageInterface, to=storage, scope=singleton)
 
 
 def downloader() -> VideoDownloaderInterface:
@@ -57,3 +61,18 @@ def amqp() -> BlockingConnection:
     except AMQPConnectionError:
         logging.error("Couldn't connect to the AMQP broker at: [%s]" % dsn)
         sys.exit(2)
+
+def storage() -> StorageInterface:
+    dsn: str = Config.dsn()
+    parts: ParseResult = urlparse(dsn)
+
+    if parts.scheme == "postgresql":
+        return PostgreSQLStorage(dsn)
+
+    raise EnvironmentError(
+        """
+        Wrong storage DSN provided.
+        Must be in the following format:
+        postgresql://username:password@hostname:port/database
+        """
+    )

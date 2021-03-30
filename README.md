@@ -52,11 +52,20 @@ python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/californ
 ```
 
 ```sql
+CREATE TABLE urls (
+  id BIGSERIAL PRIMARY KEY,
+  URL TEXT NOT NULL,
+  UNIQUE(url)
+);
+
 CREATE TABLE faces (
-  id BIGSERIAL NOT NULL,
+  id BIGSERIAL PRIMARY KEY,
+  url_id BIGINT NOT NULL,
+  ts FLOAT NOT NULL,
   entity TEXT NOT NULL DEFAULT '',
   entity_id BIGINT NOT NULL DEFAULT 0,
   tags TEXT[] NOT NULL DEFAULT '{}'::TEXT[],
+  encoder VARCHAR(16) NOT NULL,
   encoding FLOAT[128]
 );
 ```

@@ -31,6 +31,14 @@ class Base64FacePublisher(FacesPublisherInterface):
         return messages
 
     def convert_image_to_base64(self, img: Image) -> str:
+        """ Convert PIL Image to the string, using the base64 encoder
+
+        Args:
+            img (Image):  PIL Image
+
+        Returns:
+            str: Base64 encoded string with image content
+        """
         buffer = BytesIO()
         img.save(buffer, format="webp")
         return "data:image/webp;base64," + b64encode(buffer.getvalue()).decode()

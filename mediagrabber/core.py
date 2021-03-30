@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 from os import path
-from typing import List
+from typing import List, Optional
 from PIL.Image import Image
 from injector import inject
 import os
@@ -90,6 +90,12 @@ class FacesPublisherInterface(ABC):
         raise NotImplementedError
 
 
+class StorageInterface(ABC):
+    @abstractmethod
+    def get_url_id_or_create(self, url: str) -> Optional[str]:
+        raise NotImplementedError
+
+
 def is_url(url: str) -> bool:
     return url.startswith(("http://", "https://"))
 
@@ -103,12 +109,14 @@ class MediaGrabber(ABC):
         resizer: FramesResizerInterface,
         detector: FacesDetectorInterface,
         publisher: FacesPublisherInterface,
+        storage: StorageInterface
     ):
         self.downloader = downloader
         self.retriever = retriever
         self.resizer = resizer
         self.detector = detector
         self.publisher = publisher
+        self.storage = storage
 
     def download(self, url: str) -> dict:
         return self.downloader.download(url).__dict__
@@ -160,6 +168,9 @@ class MediaGrabber(ABC):
         tags: List[str],
         tolerance: float = 0.45,
     ):
+        url_id: int = self.storage.get_url_id_or_create(url)
+        logging.info(f"URL ID: {url_id}")
+
         filename = self.get_file_path(url)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
@@ -168,15 +179,16 @@ class MediaGrabber(ABC):
         logging.info(f"{len(faces)} faces found")
 
         print(faces)
+        # Here we need to save the url, embedding with url_id, faces content and send info about saved data.
         # encodings_ids = self.vector_storage.save_faces(faces)
-        for face in faces:
-            body = {
-                'externalEntity': entity,
-                'externalEntityId': id,
-                'tags': tags,
-                'encoding': face.encoding,
-            }
-            # es.index(index='faces', body=body)
+        # for face in faces:
+        #     body = {
+        #         'externalEntity': entity,
+        #         'externalEntityId': id,
+        #         'tags': tags,
+        #         'encoding': face.encoding,
+        #     }
+        #     # es.index(index='faces', body=body)
 
         encodings_ids = []
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "encodings": encodings_ids}]
