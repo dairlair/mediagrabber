@@ -184,10 +184,10 @@ class MediaGrabber(ABC):
     def memorize(
         self,
         url: str,
-        type: str,
-        entity: str,
-        id: str,
-        tags: List[str],
+        source: str = 'youtubedl',  # @TODO Implement photos support by the direct URL
+        entity: str = 'default',
+        id: str = 0,
+        tags: List[str] = list(),
         tolerance: float = 0.45,
     ) -> List[dict]:
         """ Retrieves faces from the file and memorize thems into the database.
@@ -214,14 +214,13 @@ class MediaGrabber(ABC):
         faces = self.get_faces(filename=filename, tolerance=tolerance)
         logging.info(f"{len(faces)} faces found")
 
-        print(faces)
-        # Here we need to save the url, embedding with url_id, faces content and send info about saved data.
         encodings_ids = []
         for face in faces:
             box = list((face.box["top"], face.box["right"], face.box["bottom"], face.box["left"]))
+            tags = prepare_tags(tags)
             encodings_ids.append(
                 self.storage.save_encoding(
-                    url_id, face.ts, face.id, box, entity, id, list([tags]), self.detector.get_id(), face.encoding
+                    url_id, face.ts, face.id, box, entity, id, tags, self.detector.get_id(), face.encoding
                 )
             )
 
@@ -254,3 +253,10 @@ class MediaGrabber(ABC):
             return url
 
         raise MediaGrabberError(f"File {url} not found (not URL or existing file)")
+
+def prepare_tags(tags: List[str]) -> List[str]:
+    if (isinstance(tags, str)):
+        tags = list(tags.split(','))
+    tags = list(tags)
+    assert isinstance(tags, List)
+    return tags

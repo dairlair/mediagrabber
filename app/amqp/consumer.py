@@ -21,16 +21,16 @@ class Consumer(object):
     def __init__(
         self,
         channel: BlockingChannel,
-        queue_in: str,
-        queue_out: str,
+        queue_memorize: str,
+        queue_memorized: str,
         processor: MessageProcessorInterface,
     ):
         self.channel = channel
-        self.queue_out = queue_out
-        self.channel.queue_declare(queue_in, durable=True)
-        self.channel.queue_declare(queue_out, durable=True)
+        self.queue_memorized = queue_memorized
+        self.channel.queue_declare(queue_memorize, durable=True)
+        self.channel.queue_declare(queue_memorized, durable=True)
         self.processor = processor
-        self.channel.basic_consume(queue_in, self.on_message)
+        self.channel.basic_consume(queue_memorize, self.on_message)
 
     def on_message(self, ch: BlockingChannel, method, properties, body: str):
         # We received message from the incoming queue
@@ -43,7 +43,7 @@ class Consumer(object):
             response = {**payload, **message}
             body = json.dumps(response)
             logging.info(f"Outcoming message prepared: {body}")
-            self.channel.basic_publish("", self.queue_out, body)
+            self.channel.basic_publish("", self.queue_memorized, body)
 
         # We have processed all the messages from the processor, now we ack incoming message
         ch.basic_ack(delivery_tag=method.delivery_tag)

@@ -2,7 +2,9 @@
 
 [![codecov](https://codecov.io/gh/dairlair/mediagrabber/branch/master/graph/badge.svg?token=P76Zts58lp)](undefined)
 
-The cloud native application for media grabbing. The application listens the specified queue with AMQP and expects messages in the format:
+The cloud native application for the face recognition from the media. 
+
+For faces memorizing the application listens the specified queue (`mediagrabber.memorize`) through AMQP and expects messages in the format:
 ```json
 {"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
 ```
@@ -10,8 +12,12 @@ The cloud native application for media grabbing. The application listens the spe
 You can run the faces retrieving with customized params:
 ```json
 {
-    "url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309",
-    "tolerance": 0.45
+    "url": "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c",
+    "tolerance": 0.45,
+    "source": "video", 
+    "entity": "publication",
+    "id": 2,
+    "tags": ["publication","bridgette"]
 }
 ```
 
@@ -47,7 +53,7 @@ python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fc
 ### Download video, retrieve faces and calculate embeddings
 
 ```sh
-python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" video test 1 publication
+python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" video publication 1 publication,tag1,tag2
 python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309" video test 1 publication
 # And mor than 44 minutes of breathtaking Bridgette B...
 python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c" video publication 2 publication,bridgette
