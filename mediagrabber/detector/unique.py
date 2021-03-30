@@ -8,6 +8,9 @@ import numpy as np
 class UniqueFaceDetector(FacesDetectorInterface):
     known_encodings: List[np.array] = []
 
+    def get_id(self) -> str:
+        return 'ageitgey/face_recognition'
+
     def detect(
         self,
         frames: List[RetrievedFrameResponse],

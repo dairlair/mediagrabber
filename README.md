@@ -49,6 +49,8 @@ python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fc
 ```sh
 python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" video test 1 publication
 python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309" video test 1 publication
+# And mor than 44 minutes of breathtaking Bridgette B...
+python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c" video publication 2 publication,bridgette
 ```
 
 ```sql
@@ -58,6 +60,7 @@ CREATE TABLE urls (
   UNIQUE(url)
 );
 
+DROP TABLE IF EXISTS faces;
 CREATE TABLE faces (
   id BIGSERIAL PRIMARY KEY,
   url_id BIGINT NOT NULL,
@@ -67,7 +70,7 @@ CREATE TABLE faces (
   entity TEXT NOT NULL DEFAULT '',
   entity_id BIGINT NOT NULL DEFAULT 0,
   tags TEXT[] NOT NULL DEFAULT '{}'::TEXT[],
-  encoder VARCHAR(16) NOT NULL,
+  encoder VARCHAR(32) NOT NULL,
   encoding FLOAT[128],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

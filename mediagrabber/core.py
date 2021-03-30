@@ -87,6 +87,9 @@ class FacesDetectorInterface(ABC):
     ) -> List[DetectedFaceResponse]:
         raise NotImplementedError
 
+    @abstractmethod
+    def get_id(self) -> str:
+        raise NotImplementedError
 
 class FacesPublisherInterface(ABC):
     @abstractmethod
@@ -186,7 +189,21 @@ class MediaGrabber(ABC):
         id: str,
         tags: List[str],
         tolerance: float = 0.45,
-    ):
+    ) -> List[dict]:
+        """ Retrieves faces from the file and memorize thems into the database.
+
+        Args:
+            url (str): URL or path to file.
+            type (str): video or photo. Should be used for downloader factory using.
+            entity (str): The name of entity (used for external linkage).
+            id (str): [description] The id of entity (used for external linkage).
+            tags (List[str]): The tags, which are associated with the file. Used for further recognition.
+            tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
+                0.6 is typical best performance. Defaults to 0.45.
+
+        Returns:
+            [List[dict]]: Returns information about memorized faces.
+        """
         url_id: int = self.storage.get_url_id_or_create(url)
         logging.info(f"URL ID: {url_id}")
 
@@ -204,7 +221,7 @@ class MediaGrabber(ABC):
             box = list((face.box["top"], face.box["right"], face.box["bottom"], face.box["left"]))
             encodings_ids.append(
                 self.storage.save_encoding(
-                    url_id, face.ts, face.id, box, entity, id, list([tags]), "test", face.encoding
+                    url_id, face.ts, face.id, box, entity, id, list([tags]), self.detector.get_id(), face.encoding
                 )
             )
 
