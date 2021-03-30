@@ -4,20 +4,16 @@ from typing import List, Optional
 from psycopg2.extensions import register_adapter, AsIs
 from psycopg2.extras import RealDictCursor
 
+
 def addapt_numpy_array(numpy_array):
     return AsIs(list(numpy_array))
 
-class PostgreSQLStorage():
+
+class PostgreSQLStorage:
     def __init__(self, dsn: str):
         register_adapter(np.ndarray, addapt_numpy_array)
         self.dsn = dsn
         self.conn = None
-
-    def get_url_id(self, url: str) -> Optional[int]:
-        cur = self.get_connection().cursor()
-        cur.execute("SELECT id FROM urls WHERE url = %s ", (url.lower(),))
-        row = cur.fetchone()
-        return str(row['id']) if row else None
 
     def get_url_id_or_create(self, url: str) -> int:
         try:
@@ -26,13 +22,42 @@ class PostgreSQLStorage():
             cur.execute(sql, (url.lower(),))
             row = cur.fetchone()
             self.get_connection().commit()
-            return row['id']
+            return row["id"]
         except psycopg2.errors.UniqueViolation:
             self.get_connection().rollback()
             # We anyway will return the ID of URL
             return self.get_url_id(url)
         finally:
             cur.close()
+
+    def get_url_id(self, url: str) -> Optional[int]:
+        cur = self.get_connection().cursor()
+        cur.execute("SELECT id FROM urls WHERE url = %s ", (url.lower(),))
+        row = cur.fetchone()
+        return int(row["id"]) if row else None
+
+    def save_encoding(
+        self,
+        url_id: int,
+        ts: float,
+        face_id: int,
+        box: List[int],
+        entity: str,
+        entity_id: int,
+        tags: List[str],
+        encoder: str,
+        encoding: np.array,
+    ) -> int:
+        cur = self.get_connection().cursor()
+        sql = (
+            "INSERT INTO faces (url_id, ts, face_id, box, entity, entity_id, tags, encoder, encoding)"
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, ARRAY%s) RETURNING id"
+        )
+
+        cur.execute(sql, (url_id, ts, face_id, box, entity, entity_id, tags, encoder, encoding))
+        row = cur.fetchone()
+        self.get_connection().commit()
+        return row["id"]
 
     def get_connection(self) -> psycopg2.extensions.connection:
         if self.conn is None:

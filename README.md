@@ -62,10 +62,13 @@ CREATE TABLE faces (
   id BIGSERIAL PRIMARY KEY,
   url_id BIGINT NOT NULL,
   ts FLOAT NOT NULL,
+  face_id SMALLINT NOT NULL, -- An unique face number in the one frame
+  box SMALLINT[4] NOT NULL, -- Face paddings, in the CSS format (top, right, bottom, left)
   entity TEXT NOT NULL DEFAULT '',
   entity_id BIGINT NOT NULL DEFAULT 0,
   tags TEXT[] NOT NULL DEFAULT '{}'::TEXT[],
   encoder VARCHAR(16) NOT NULL,
-  encoding FLOAT[128]
+  encoding FLOAT[128],
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 ```

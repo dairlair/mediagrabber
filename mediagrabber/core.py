@@ -62,12 +62,16 @@ class FramesResizerInterface(ABC):
 
 @dataclass
 class DetectedFaceResponse:
+    """
+    id: str The face number on the frame
+    """
+
     id: str
     img: Image
     ts: float
     pts: int
     box: dict
-    encoding: np.array
+    encoding: np.ndarray
 
 
 class FacesDetectorInterface(ABC):
@@ -92,7 +96,22 @@ class FacesPublisherInterface(ABC):
 
 class StorageInterface(ABC):
     @abstractmethod
-    def get_url_id_or_create(self, url: str) -> Optional[str]:
+    def get_url_id_or_create(self, url: str) -> Optional[int]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_encoding(
+        self,
+        url_id: int,
+        ts: float,
+        face_id: int,
+        box: List[int],
+        entity: str,
+        entity_id: int,
+        tags: List[str],
+        encoder: str,
+        encoding: np.ndarray,
+    ) -> int:
         raise NotImplementedError
 
 
@@ -109,7 +128,7 @@ class MediaGrabber(ABC):
         resizer: FramesResizerInterface,
         detector: FacesDetectorInterface,
         publisher: FacesPublisherInterface,
-        storage: StorageInterface
+        storage: StorageInterface,
     ):
         self.downloader = downloader
         self.retriever = retriever
@@ -180,17 +199,15 @@ class MediaGrabber(ABC):
 
         print(faces)
         # Here we need to save the url, embedding with url_id, faces content and send info about saved data.
-        # encodings_ids = self.vector_storage.save_faces(faces)
-        # for face in faces:
-        #     body = {
-        #         'externalEntity': entity,
-        #         'externalEntityId': id,
-        #         'tags': tags,
-        #         'encoding': face.encoding,
-        #     }
-        #     # es.index(index='faces', body=body)
-
         encodings_ids = []
+        for face in faces:
+            box = list((face.box["top"], face.box["right"], face.box["bottom"], face.box["left"]))
+            encodings_ids.append(
+                self.storage.save_encoding(
+                    url_id, face.ts, face.id, box, entity, id, list([tags]), "test", face.encoding
+                )
+            )
+
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "encodings": encodings_ids}]
 
     def get_faces(
