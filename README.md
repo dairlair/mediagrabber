@@ -54,12 +54,13 @@ python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fc
 
 ```sh
 python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" video publication 1 publication,tag1,tag2
-python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309" video test 1 publication
+python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309" video publication 1 publication,tag1,tag2
 # And mor than 44 minutes of breathtaking Bridgette B...
 python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c" video publication 2 publication,bridgette
 ```
 
 ```sql
+DROP TABLE IF EXISTS urls;
 CREATE TABLE urls (
   id BIGSERIAL PRIMARY KEY,
   URL TEXT NOT NULL,
