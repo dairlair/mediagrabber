@@ -32,6 +32,12 @@ class MediaDownloaderInterface(ABC):
         raise NotImplementedError
 
 
+class MediaDownloaderFactoryInterface(ABC):
+    @abstractmethod
+    def get_media_downloader(self, id: str) -> MediaDownloaderInterface:
+        raise NotImplementedError
+
+
 @dataclass
 class RetrievedFrameResponse:
     ts: float
@@ -126,22 +132,22 @@ class MediaGrabber(ABC):
     @inject
     def __init__(
         self,
-        downloader: MediaDownloaderInterface,
         retriever: FramesRetrieverInterface,
         resizer: FramesResizerInterface,
         detector: FacesDetectorInterface,
         publisher: FacesPublisherInterface,
         storage: StorageInterface,
+        downloader_factory: MediaDownloaderFactoryInterface,
     ):
-        self.downloader = downloader
         self.retriever = retriever
         self.resizer = resizer
         self.detector = detector
         self.publisher = publisher
         self.storage = storage
+        self.downloader_factory = downloader_factory
 
-    def download(self, url: str) -> dict:
-        return self.downloader.download(url).__dict__
+    def download(self, url: str, source: str = 'youtubedl') -> dict:
+        return self.downloader_factory.get_media_downloader(source).download(url).__dict__
 
     def retrieve(
         self,
@@ -207,7 +213,7 @@ class MediaGrabber(ABC):
         url_id: int = self.storage.get_url_id_or_create(url)
         logging.info(f"URL ID: {url_id}")
 
-        filename = self.get_file_path(url)
+        filename = self.get_file_path(source, url)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
@@ -245,9 +251,10 @@ class MediaGrabber(ABC):
 
         return self.detector.detect(frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance)
 
-    def get_file_path(self, url: str) -> str:
+    def get_file_path(self, source: str, url: str) -> str:
+        downloader: MediaDownloaderInterface = self.downloader_factory.get_media_downloader(source)
         if is_url(url):
-            return self.downloader.download(url).path
+            return downloader.download(url).path
 
         if path.exists(url):
             return url

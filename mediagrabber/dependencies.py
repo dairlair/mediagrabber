@@ -1,11 +1,12 @@
+from mediagrabber.downloader.factory import MediaDownloaderFactory
 from mediagrabber.storage.postgres import PostgreSQLStorage
 from mediagrabber.publisher.base64 import Base64FacePublisher
-from mediagrabber.publisher.file import FileFacePublisher
 from mediagrabber.detector.unique import UniqueFaceDetector
 from mediagrabber.resizer.default import DefaultFramesResizer
 from mediagrabber.retriever.av import AvFramesRetriever
 from injector import singleton, Binder
 from mediagrabber.core import (
+    MediaDownloaderFactoryInterface,
     FacesDetectorInterface,
     FramesResizerInterface,
     MediaGrabber,
@@ -16,15 +17,13 @@ from mediagrabber.core import (
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
 from pika.exceptions import AMQPConnectionError
-from mediagrabber.core import MediaDownloaderInterface
-from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
 import sys
 import logging
 from urllib.parse import urlparse, ParseResult
 
 
 def configure(binder: Binder) -> None:
-    binder.bind(MediaDownloaderInterface, to=downloader, scope=singleton)
+    binder.bind(MediaDownloaderFactoryInterface, to=downloader, scope=singleton)
     binder.bind(FramesRetrieverInterface, to=retriever, scope=singleton)
     binder.bind(FramesResizerInterface, to=resizer, scope=singleton)
     binder.bind(MediaGrabber, to=MediaGrabber, scope=singleton)
@@ -34,8 +33,8 @@ def configure(binder: Binder) -> None:
     binder.bind(StorageInterface, to=storage, scope=singleton)
 
 
-def downloader() -> MediaDownloaderInterface:
-    return YoutubedlVideoDownloader(Config.workdir())
+def downloader() -> MediaDownloaderFactoryInterface:
+    return MediaDownloaderFactory(Config.workdir())
 
 
 def retriever() -> FramesRetrieverInterface:
