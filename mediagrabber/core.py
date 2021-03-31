@@ -14,7 +14,7 @@ class MediaGrabberError(Exception):
     data: dict
 
 
-class DownloadedVideoResponse:
+class DownloadedMediaResponse:
     size: int = None
 
     def __init__(self, code: int, output: str, path: str, duration: str):
@@ -28,7 +28,7 @@ class DownloadedVideoResponse:
 
 class MediaDownloaderInterface(ABC):
     @abstractmethod
-    def download(self, url: str) -> DownloadedVideoResponse:
+    def download(self, url: str) -> DownloadedMediaResponse:
         raise NotImplementedError
 
 
