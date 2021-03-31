@@ -26,9 +26,9 @@ class DownloadedVideoResponse:
             self.size = os.path.getsize(path)
 
 
-class VideoDownloaderInterface(ABC):
+class MediaDownloaderInterface(ABC):
     @abstractmethod
-    def download(self, video_page_url: str) -> DownloadedVideoResponse:
+    def download(self, url: str) -> DownloadedVideoResponse:
         raise NotImplementedError
 
 
@@ -126,7 +126,7 @@ class MediaGrabber(ABC):
     @inject
     def __init__(
         self,
-        downloader: VideoDownloaderInterface,
+        downloader: MediaDownloaderInterface,
         retriever: FramesRetrieverInterface,
         resizer: FramesResizerInterface,
         detector: FacesDetectorInterface,

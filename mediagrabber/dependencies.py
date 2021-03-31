@@ -16,7 +16,7 @@ from mediagrabber.core import (
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
 from pika.exceptions import AMQPConnectionError
-from mediagrabber.core import VideoDownloaderInterface
+from mediagrabber.core import MediaDownloaderInterface
 from mediagrabber.downloader.youtubedl import YoutubedlVideoDownloader
 import sys
 import logging
@@ -24,7 +24,7 @@ from urllib.parse import urlparse, ParseResult
 
 
 def configure(binder: Binder) -> None:
-    binder.bind(VideoDownloaderInterface, to=downloader, scope=singleton)
+    binder.bind(MediaDownloaderInterface, to=downloader, scope=singleton)
     binder.bind(FramesRetrieverInterface, to=retriever, scope=singleton)
     binder.bind(FramesResizerInterface, to=resizer, scope=singleton)
     binder.bind(MediaGrabber, to=MediaGrabber, scope=singleton)
@@ -34,7 +34,7 @@ def configure(binder: Binder) -> None:
     binder.bind(StorageInterface, to=storage, scope=singleton)
 
 
-def downloader() -> VideoDownloaderInterface:
+def downloader() -> MediaDownloaderInterface:
     return YoutubedlVideoDownloader(Config.workdir())
 
 

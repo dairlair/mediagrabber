@@ -14,7 +14,7 @@ You can run the faces retrieving with customized params:
 {
     "url": "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c",
     "tolerance": 0.45,
-    "source": "video", 
+    "source": "youtubedl", 
     "entity": "publication",
     "id": 2,
     "tags": ["publication","bridgette"]
@@ -53,10 +53,12 @@ python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fc
 ### Download video, retrieve faces and calculate embeddings
 
 ```sh
-python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" video publication 1 publication,tag1,tag2
+python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" youtubedl publication 1 publication,tag1,tag2
 python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309" video publication 1 publication,tag1,tag2
 # And mor than 44 minutes of breathtaking Bridgette B...
-python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c" video publication 2 publication,bridgette
+python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c" youtubedl publication 2 publication,bridgette
+# Or you can memorize the picture by the direct URL
+python app/cli/cli.py memorize "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=687&q=100" direct publication 3 publication,unsplash
 ```
 
 ```sql
