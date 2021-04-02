@@ -48,14 +48,26 @@ class RetrievedFrameResponse:
 class FramesRetrieverInterface(ABC):
     @abstractmethod
     def retrieve(self, file: str) -> List[RetrievedFrameResponse]:
-        """
-        Reads the video file and retrieves frames in the Pillow library format.
+        """ Reads the video file and retrieves frames in the Pillow library format.
 
         Args:
             file (str): Path to the file
 
         Returns:
             List[RetrievedFrameResponse]: List of the retrieved frames
+        """
+        raise NotImplementedError
+
+class FramesRetrieverFactoryInterface(ABC):
+    @abstractmethod
+    def get_frames_retriever(self, file: str) -> FramesRetrieverInterface:
+        """ Detects local file type and returns suitable frames retriever
+
+        Args:
+            file (str): Filename
+
+        Returns:
+            FramesRetrieverInterface:
         """
         raise NotImplementedError
 
@@ -85,7 +97,7 @@ class FacesDetectorInterface(ABC):
     def detect(
         self,
         frames: List[RetrievedFrameResponse],
-        number_of_upsamples: int = 0,
+        number_of_upsamples: int = 1,
         locate_model: str = "fog",
         num_jitters: int = 1,
         encode_model: str = "small",
@@ -132,14 +144,14 @@ class MediaGrabber(ABC):
     @inject
     def __init__(
         self,
-        retriever: FramesRetrieverInterface,
+        retriever_factory: FramesRetrieverFactoryInterface,
         resizer: FramesResizerInterface,
         detector: FacesDetectorInterface,
         publisher: FacesPublisherInterface,
         storage: StorageInterface,
         downloader_factory: MediaDownloaderFactoryInterface,
     ):
-        self.retriever = retriever
+        self.retriever_factory = retriever_factory
         self.resizer = resizer
         self.detector = detector
         self.publisher = publisher
@@ -153,7 +165,7 @@ class MediaGrabber(ABC):
         self,
         url: str,
         resize_height: int = None,
-        number_of_upsamples: int = 0,
+        number_of_upsamples: int = 1,
         locate_model: str = "fog",
         num_jitters: int = 1,
         encode_model: str = "small",
@@ -236,13 +248,13 @@ class MediaGrabber(ABC):
         self,
         filename: str,
         resize_height: int = None,
-        number_of_upsamples: int = 0,
+        number_of_upsamples: int = 1,
         locate_model: str = "fog",
         num_jitters: int = 1,
         encode_model: str = "small",
         tolerance: float = 0.6,
     ) -> List[DetectedFaceResponse]:
-        frames: List[RetrievedFrameResponse] = self.retriever.retrieve(filename)
+        frames: List[RetrievedFrameResponse] = self.retriever_factory.get_frames_retriever(filename).retrieve(filename)
         logging.info(f"{len(frames)} frames retrieved from video file")
 
         if resize_height is not None:

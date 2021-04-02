@@ -14,7 +14,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
     def detect(
         self,
         frames: List[RetrievedFrameResponse],
-        number_of_upsamples: int = 0,
+        number_of_upsamples: int = 1,
         locate_model: str = "fog",
         num_jitters: int = 1,
         encode_model: str = "small",
