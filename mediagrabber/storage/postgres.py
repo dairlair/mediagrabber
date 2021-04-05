@@ -34,7 +34,17 @@ class PostgreSQLStorage:
         cur = self.get_connection().cursor()
         cur.execute("SELECT id FROM urls WHERE url = %s ", (url.lower(),))
         row = cur.fetchone()
+        cur.close()
         return int(row["id"]) if row else None
+
+    def get_faces(self) -> List[dict]:
+        try:
+            cur = self.get_connection().cursor()
+            cur.execute("SELECT id, encoding FROM faces")
+            rows = cur.fetchall()
+            return rows
+        finally:
+            cur.close()
 
     def save_encoding(
         self,

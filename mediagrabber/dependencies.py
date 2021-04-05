@@ -1,3 +1,4 @@
+from mediagrabber.distancer.annoy import AnnoyDistancer
 from mediagrabber.retriever.factory import FramesRetrieverFactory
 from mediagrabber.downloader.factory import MediaDownloaderFactory
 from mediagrabber.storage.postgres import PostgreSQLStorage
@@ -13,6 +14,7 @@ from mediagrabber.core import (
     FramesRetrieverFactoryInterface,
     FacesPublisherInterface,
     StorageInterface,
+    DistancerInterface
 )
 from mediagrabber.config import Config
 from pika import BlockingConnection, URLParameters
@@ -31,6 +33,7 @@ def configure(binder: Binder) -> None:
     binder.bind(FacesDetectorInterface, to=detector, scope=singleton)
     binder.bind(FacesPublisherInterface, to=publisher, scope=singleton)
     binder.bind(StorageInterface, to=storage, scope=singleton)
+    binder.bind(DistancerInterface, to=distancer, scope=singleton)
 
 
 def downloader() -> MediaDownloaderFactoryInterface:
@@ -75,3 +78,6 @@ def storage() -> StorageInterface:
         postgresql://username:password@hostname:port/database
         """
     )
+
+def distancer() -> DistancerInterface:
+    return AnnoyDistancer(storage())

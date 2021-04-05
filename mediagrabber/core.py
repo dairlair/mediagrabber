@@ -48,7 +48,7 @@ class RetrievedFrameResponse:
 class FramesRetrieverInterface(ABC):
     @abstractmethod
     def retrieve(self, file: str) -> List[RetrievedFrameResponse]:
-        """ Reads the video file and retrieves frames in the Pillow library format.
+        """Reads the video file and retrieves frames in the Pillow library format.
 
         Args:
             file (str): Path to the file
@@ -58,10 +58,11 @@ class FramesRetrieverInterface(ABC):
         """
         raise NotImplementedError
 
+
 class FramesRetrieverFactoryInterface(ABC):
     @abstractmethod
     def get_frames_retriever(self, file: str) -> FramesRetrieverInterface:
-        """ Detects local file type and returns suitable frames retriever
+        """Detects local file type and returns suitable frames retriever
 
         Args:
             file (str): Filename
@@ -109,6 +110,7 @@ class FacesDetectorInterface(ABC):
     def get_id(self) -> str:
         raise NotImplementedError
 
+
 class FacesPublisherInterface(ABC):
     @abstractmethod
     def publish(self, faces: List[DetectedFaceResponse], path: str) -> List[dict]:
@@ -136,6 +138,13 @@ class StorageInterface(ABC):
         raise NotImplementedError
 
 
+class DistancerInterface(ABC):
+    def __init__(self, storage: StorageInterface) -> None:
+        self.storage = storage
+
+    def get_nns_by_face_id(self, face_id, n, search_k=-1, include_distances=False):
+        raise NotImplementedError
+
 def is_url(url: str) -> bool:
     return url.startswith(("http://", "https://"))
 
@@ -150,6 +159,7 @@ class MediaGrabber(ABC):
         publisher: FacesPublisherInterface,
         storage: StorageInterface,
         downloader_factory: MediaDownloaderFactoryInterface,
+        distancer: DistancerInterface,
     ):
         self.retriever_factory = retriever_factory
         self.resizer = resizer
@@ -157,13 +167,15 @@ class MediaGrabber(ABC):
         self.publisher = publisher
         self.storage = storage
         self.downloader_factory = downloader_factory
+        self.distancer = distancer
 
-    def download(self, url: str, source: str = 'youtubedl') -> dict:
+    def download(self, url: str, source: str = "youtubedl") -> dict:
         return self.downloader_factory.get_media_downloader(source).download(url).__dict__
 
     def retrieve(
         self,
         url: str,
+        source: str,
         resize_height: int = None,
         number_of_upsamples: int = 1,
         locate_model: str = "fog",
@@ -188,7 +200,7 @@ class MediaGrabber(ABC):
             tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
                 0.6 is typical best performance.
         """
-        filename = self.get_file_path(url)
+        filename = self.get_file_path(url, source)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
@@ -202,13 +214,13 @@ class MediaGrabber(ABC):
     def memorize(
         self,
         url: str,
-        source: str = 'youtubedl',  # @TODO Implement photos support by the direct URL
-        entity: str = 'default',
+        source: str = "youtubedl",  # @TODO Implement photos support by the direct URL
+        entity: str = "default",
         id: str = 0,
         tags: List[str] = list(),
         tolerance: float = 0.45,
     ) -> List[dict]:
-        """ Retrieves faces from the file and memorize thems into the database.
+        """Retrieves faces from the file and memorize thems into the database.
 
         Args:
             url (str): URL or path to file.
@@ -242,7 +254,13 @@ class MediaGrabber(ABC):
                 )
             )
 
-        return [{"success": True, "resolution": f"File [{url}] memorized successfully", "encodings": encodings_ids}]
+        return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
+
+    def recognize(self, faceId: int, n: int = 10, tags: List[str] = list()) -> dict:
+        print(f"Recognize face #{faceId} in the tags [{tags}]")
+        nns = self.distancer.get_nns_by_face_id(faceId, n)
+        print(nns)
+        return ''
 
     def get_faces(
         self,
@@ -263,9 +281,9 @@ class MediaGrabber(ABC):
 
         return self.detector.detect(frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance)
 
-    def get_file_path(self, source: str, url: str) -> str:
-        downloader: MediaDownloaderInterface = self.downloader_factory.get_media_downloader(source)
+    def get_file_path(self, url: str, source: str = "direct") -> str:
         if is_url(url):
+            downloader: MediaDownloaderInterface = self.downloader_factory.get_media_downloader(source)
             return downloader.download(url).path
 
         if path.exists(url):
@@ -273,9 +291,10 @@ class MediaGrabber(ABC):
 
         raise MediaGrabberError(f"File {url} not found (not URL or existing file)")
 
+
 def prepare_tags(tags: List[str]) -> List[str]:
-    if (isinstance(tags, str)):
-        tags = list(tags.split(','))
+    if isinstance(tags, str):
+        tags = list(tags.split(","))
     tags = list(tags)
     assert isinstance(tags, List)
     return tags
