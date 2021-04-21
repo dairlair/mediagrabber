@@ -137,13 +137,18 @@ class StorageInterface(ABC):
     ) -> int:
         raise NotImplementedError
 
+    @abstractmethod
+    def get_faces() -> List[dict]:
+        raise NotImplementedError
+
 
 class DistancerInterface(ABC):
     def __init__(self, storage: StorageInterface) -> None:
         self.storage = storage
 
-    def get_nns_by_face_id(self, face_id, n, search_k=-1, include_distances=False):
+    def get_nns_by_face_id(self, faceId: int, n: int, tags: List[str]):
         raise NotImplementedError
+
 
 def is_url(url: str) -> bool:
     return url.startswith(("http://", "https://"))
@@ -256,11 +261,13 @@ class MediaGrabber(ABC):
 
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
 
-    def recognize(self, faceId: int, n: int = 10, tags: List[str] = list()) -> dict:
-        print(f"Recognize face #{faceId} in the tags [{tags}]")
-        nns = self.distancer.get_nns_by_face_id(faceId, n)
+    def recognize(self, faceId: int, count: int = 10, tags: List[str] = list()) -> dict:
+        tags = prepare_tags(tags)
+        print(f"Recognize face #{faceId} in the tags: {tags}")  
+        print(type(tags))
+        nns = self.distancer.get_nns_by_face_id(faceId, count, tags)
         print(nns)
-        return ''
+        return ""
 
     def get_faces(
         self,

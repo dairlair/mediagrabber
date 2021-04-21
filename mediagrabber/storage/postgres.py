@@ -8,7 +8,6 @@ from psycopg2.extras import RealDictCursor
 def addapt_numpy_array(numpy_array):
     return AsIs(list(numpy_array))
 
-
 class PostgreSQLStorage:
     def __init__(self, dsn: str):
         register_adapter(np.ndarray, addapt_numpy_array)
@@ -37,10 +36,13 @@ class PostgreSQLStorage:
         cur.close()
         return int(row["id"]) if row else None
 
-    def get_faces(self) -> List[dict]:
+    def get_faces(self, tags: List[str]) -> List[dict]:
         try:
             cur = self.get_connection().cursor()
-            cur.execute("SELECT id, encoding FROM faces")
+            if len(tags) > 0:
+                cur.execute("SELECT id, encoding FROM faces WHERE tags = ANY(%s)", (tags, 1))
+            else:
+                cur.execute("SELECT id, encoding FROM face")
             rows = cur.fetchall()
             return rows
         finally:

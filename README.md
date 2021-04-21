@@ -63,7 +63,7 @@ python app/cli/cli.py memorize "https://images.unsplash.com/photo-1517486808906-
 # Photo with big face:
 python app/cli/cli.py memorize "https://images.unsplash.com/photo-1557296387-5358ad7997bb?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=694&q=80" direct publication 3 publication,unsplash
 # Recognize faces:
-python app/cli/cli.py memorize faceId
+python app/cli/cli.py recognize 12 --count=10 --tags=unsplash
 ```
 
 ```sql
