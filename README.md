@@ -70,7 +70,7 @@ python app/cli/cli.py recognize 12 --count=10 --tags=unsplash
 DROP TABLE IF EXISTS urls;
 CREATE TABLE urls (
   id BIGSERIAL PRIMARY KEY,
-  URL TEXT NOT NULL,
+  url TEXT NOT NULL,
   UNIQUE(url)
 );
 

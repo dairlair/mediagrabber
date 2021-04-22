@@ -242,6 +242,8 @@ class MediaGrabber(ABC):
         url_id: int = self.storage.get_url_id_or_create(url)
         logging.info(f"URL ID: {url_id}")
 
+        return 'Stop'
+
         filename = self.get_file_path(source, url)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
