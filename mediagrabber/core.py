@@ -229,7 +229,7 @@ class MediaGrabber(ABC):
 
         Args:
             url (str): URL or path to file.
-            type (str): video or photo. Should be used for downloader factory using.
+            source (str): video or photo. Should be used for downloader factory using.
             entity (str): The name of entity (used for external linkage).
             id (str): [description] The id of entity (used for external linkage).
             tags (List[str]): The tags, which are associated with the file. Used for further recognition.
@@ -239,12 +239,10 @@ class MediaGrabber(ABC):
         Returns:
             [List[dict]]: Returns information about memorized faces.
         """
-        url_id: int = self.storage.get_url_id_or_create(url)
-        logging.info(f"URL ID: {url_id}")
+        urlId: int = self.storage.get_url_id_or_create(url)
+        logging.info(f"URL ID: {urlId}")
 
-        return 'Stop'
-
-        filename = self.get_file_path(source, url)
+        filename = self.get_file_path(url, source)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
@@ -257,7 +255,7 @@ class MediaGrabber(ABC):
             tags = prepare_tags(tags)
             encodings_ids.append(
                 self.storage.save_encoding(
-                    url_id, face.ts, face.id, box, entity, id, tags, self.detector.get_id(), face.encoding
+                    urlId, face.ts, face.id, box, entity, id, tags, self.detector.get_id(), face.encoding
                 )
             )
 
@@ -265,7 +263,7 @@ class MediaGrabber(ABC):
 
     def recognize(self, faceId: int, count: int = 10, tags: List[str] = list()) -> dict:
         tags = prepare_tags(tags)
-        print(f"Recognize face #{faceId} in the tags: {tags}")  
+        print(f"Recognize face #{faceId} in the tags: {tags}")
         print(type(tags))
         nns = self.distancer.get_nns_by_face_id(faceId, count, tags)
         print(nns)

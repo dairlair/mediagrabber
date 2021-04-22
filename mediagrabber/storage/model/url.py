@@ -1,7 +1,5 @@
-from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, BigInteger, String
-
-Base = declarative_base()
+from mediagrabber.storage.model.base import Base
 
 
 class Url(Base):
@@ -11,4 +9,4 @@ class Url(Base):
     url = Column(String, unique=True)
 
     def __repr__(self):
-        return f"<URL(id={self.id}, url='{self.url}')"
+        return f"<Url(id={self.id}, url='{self.url}')"

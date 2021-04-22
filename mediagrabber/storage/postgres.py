@@ -3,6 +3,7 @@ from typing import List, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from mediagrabber.storage.model.url import Url
+from mediagrabber.storage.model.face import Face
 
 
 class PostgreSQLStorage:
@@ -41,24 +42,27 @@ class PostgreSQLStorage:
 
     def save_encoding(
         self,
-        url_id: int,
+        urlId: int,
         ts: float,
-        face_id: int,
+        faceId: int,
         box: List[int],
         entity: str,
-        entity_id: int,
+        entityId: int,
         tags: List[str],
         encoder: str,
         encoding: np.array,
     ) -> int:
-        # cur = self.get_connection().cursor()
-        # sql = (
-        #     "INSERT INTO faces (url_id, ts, face_id, box, entity, entity_id, tags, encoder, encoding)"
-        #     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, ARRAY%s) RETURNING id"
-        # )
-
-        # cur.execute(sql, (url_id, ts, face_id, box, entity, entity_id, tags, encoder, encoding))
-        # row = cur.fetchone()
-        # self.get_connection().commit()
-        # return row["id"]
-        raise NotImplementedError
+        with self.session() as session:
+            model: Face = Face()
+            model.urlId = urlId
+            model.ts = ts
+            model.faceId = faceId
+            model.box = box
+            model.entity = entity
+            model.entityId = entityId
+            model.tags = tags
+            model.encoder = encoder
+            model.encoding = encoding
+            session.add(model)
+            session.commit()
+            return model.id
