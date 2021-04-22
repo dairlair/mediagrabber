@@ -52,8 +52,18 @@ def run_migrations_online():
     """
     connectable = create_engine(Config.dsn(), future=True)
 
+    def process_revision_directives(context, revision, directives):
+        if config.cmd_opts.autogenerate:
+            script = directives[0]
+            if script.upgrade_ops.is_empty():
+                directives[:] = []
+
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            process_revision_directives=process_revision_directives,
+        )
 
         with context.begin_transaction():
             context.run_migrations()
