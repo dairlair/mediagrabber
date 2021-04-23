@@ -19,6 +19,16 @@ class MediaGrabberMemorizeProcessor(MessageProcessorInterface):
 
         return self.service.memorize(**args)
 
+class MediaGrabberRecognizeProcessor(MessageProcessorInterface):
+    def __init__(self, service: MediaGrabber) -> None:
+        self.service = service
+
+    def process(self, payload: dict) -> List[dict]:
+        # Payload may contains properties, not intended to be passed to the retrieve function, lets filter them.
+        args = {k: v for k, v in payload.items() if k in self.service.recognize.__code__.co_varnames}
+
+        return self.service.recognize(**args)
+
 
 if __name__ == "__main__":
     # Set desired logging level
@@ -34,8 +44,10 @@ if __name__ == "__main__":
     channel.basic_qos(prefetch_count=1)
 
     # Create consumer
-    processor = MediaGrabberMemorizeProcessor(injector.get(MediaGrabber))
-    Consumer(channel, Config.queue_memorize(), Config.queue_memorized(), processor)
+    memorizeProcessor = MediaGrabberMemorizeProcessor(injector.get(MediaGrabber))
+    recognizeProcessor = MediaGrabberRecognizeProcessor(injector.get(MediaGrabber))
+    Consumer(channel, Config.queue_memorize(), Config.queue_memorized(), memorizeProcessor)
+    Consumer(channel, Config.queue_recognize(), Config.queue_recognized(), recognizeProcessor)
 
     try:
         channel.start_consuming()

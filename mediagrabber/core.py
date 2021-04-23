@@ -126,12 +126,12 @@ class StorageInterface(ABC):
     @abstractmethod
     def save_encoding(
         self,
-        url_id: int,
+        urlId: int,
         ts: float,
-        face_id: int,
+        faceId: int,
         box: List[int],
         entity: str,
-        entity_id: int,
+        entityId: int,
         tags: List[str],
         encoder: str,
         encoding: np.ndarray,
@@ -143,11 +143,16 @@ class StorageInterface(ABC):
         raise NotImplementedError
 
 
+@dataclass
+class FaceDistance:
+    faceId: int
+    distance: float
+
 class DistancerInterface(ABC):
     def __init__(self, storage: StorageInterface) -> None:
         self.storage = storage
 
-    def get_nns_by_face_id(self, faceId: int, n: int, tags: List[str]):
+    def get_nns_by_face_id(self, faceId: int, n: int, tags: List[str]) -> List[FaceDistance]:
         raise NotImplementedError
 
 
@@ -263,11 +268,10 @@ class MediaGrabber(ABC):
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
 
     def recognize(self, faceId: int, count: int = 10, tags: List[str] = list()) -> dict:
-        # Implement face existense check
+        # @TODO Implement face existense check
         tags = prepare_tags(tags)
-        nns = self.distancer.get_nns_by_face_id(faceId, count, tags)
-        # return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
-        return nns
+        distances = self.distancer.get_nns_by_face_id(faceId, count, tags)
+        return [{"success": True, "distances": [x.__dict__ for x in distances]}]
 
     def get_faces(
         self,

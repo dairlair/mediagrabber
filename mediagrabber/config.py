@@ -36,6 +36,14 @@ class Config:
         return os.environ.get("AMQP_MEMORIZED", "mediagrabber.memorized")
 
     @staticmethod
+    def queue_recognize() -> str:
+        return os.environ.get("AMQP_RECOGNIZE", "mediagrabber.recognize")
+
+    @staticmethod
+    def queue_recognized() -> str:
+        return os.environ.get("AMQP_RECOGNIZED", "mediagrabber.recognized")    
+
+    @staticmethod
     def require(variable) -> str:
         value = os.environ.get(variable, None)
         if value is None:
