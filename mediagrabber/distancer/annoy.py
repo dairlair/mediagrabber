@@ -8,8 +8,8 @@ class AnnoyDistancer(DistancerInterface):
     def get_nns_by_face_id(self, faceId: int, n: int, tags: List[str]):
         # Build index
         t = AnnoyIndex(128, "euclidean")
-        for faces in self.storage.get_faces(tags):
-            t.add_item(faces["id"], faces["encoding"])
+        for face in self.storage.get_faces(tags):
+            t.add_item(face.id, face.encoding)
         logging.info("Build index...")
         t.build(10)  # 10 trees
         # Find nearest neighbors

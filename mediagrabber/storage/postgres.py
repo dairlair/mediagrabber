@@ -27,18 +27,9 @@ class PostgreSQLStorage:
             model = session.query(Url).filter_by(url=url).first()
             return model.id if model else None
 
-    def get_faces(self, tags: List[str]) -> List[dict]:
-        # try:
-        #     cur = self.get_connection().cursor()
-        #     if len(tags) > 0:
-        #         cur.execute("SELECT id, encoding FROM faces WHERE tags = ANY(%s)", (tags, 1))
-        #     else:
-        #         cur.execute("SELECT id, encoding FROM face")
-        #     rows = cur.fetchall()
-        #     return rows
-        # finally:
-        #     cur.close()
-        raise NotImplementedError
+    def get_faces(self, tags: List[str]) -> List[Face]:
+        with self.session() as session:
+            return session.query(Face).filter(Face.tags.overlap([tags])).all()
 
     def save_encoding(
         self,

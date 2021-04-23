@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
+from mediagrabber.storage.model.face import Face
 from os import path
 from typing import List, Optional
 from PIL.Image import Image
@@ -138,7 +139,7 @@ class StorageInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_faces() -> List[dict]:
+    def get_faces() -> List[Face]:
         raise NotImplementedError
 
 
@@ -262,12 +263,11 @@ class MediaGrabber(ABC):
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
 
     def recognize(self, faceId: int, count: int = 10, tags: List[str] = list()) -> dict:
+        # Implement face existense check
         tags = prepare_tags(tags)
-        print(f"Recognize face #{faceId} in the tags: {tags}")
-        print(type(tags))
         nns = self.distancer.get_nns_by_face_id(faceId, count, tags)
-        print(nns)
-        return ""
+        # return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
+        return nns
 
     def get_faces(
         self,
