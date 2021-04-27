@@ -2,9 +2,10 @@
 
 [![codecov](https://codecov.io/gh/dairlair/mediagrabber/branch/master/graph/badge.svg?token=P76Zts58lp)](undefined)
 
-The cloud native application for the face recognition from the media. 
+The cloud native application for the face recognition from the media.
 
-For faces memorizing the application listens the specified queue (`mediagrabber.memorize`) through AMQP and expects messages in the format:
+## Memorizing
+For the faces memorizing the application listens the specified queue (`mediagrabber.memorize`, is configurable) through AMQP and expects messages in the format:
 ```json
 {"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
 ```
@@ -20,6 +21,20 @@ You can run the faces retrieving with customized params:
     "tags": ["publication","bridgette"]
 }
 ```
+
+
+
+For the faces recogntion send this event to the queue `mediagrabber.recognize`:
+```json
+{"faceId": 1}
+```
+
+Or customized:
+```json
+{"faceId": 1, "count": 10, "tags": ["unsplash"]}
+```
+
+
 
 ## Run, using CLI interface
 
