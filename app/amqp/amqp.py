@@ -19,6 +19,7 @@ class MediaGrabberMemorizeProcessor(MessageProcessorInterface):
 
         return self.service.memorize(**args)
 
+
 class MediaGrabberRecognizeProcessor(MessageProcessorInterface):
     def __init__(self, service: MediaGrabber) -> None:
         self.service = service
@@ -44,10 +45,21 @@ if __name__ == "__main__":
     channel.basic_qos(prefetch_count=1)
 
     # Create consumer
-    memorizeProcessor = MediaGrabberMemorizeProcessor(injector.get(MediaGrabber))
-    recognizeProcessor = MediaGrabberRecognizeProcessor(injector.get(MediaGrabber))
-    Consumer(channel, Config.queue_memorize(), Config.queue_memorized(), memorizeProcessor)
-    Consumer(channel, Config.queue_recognize(), Config.queue_recognized(), recognizeProcessor)
+    consumersConfigs = [
+        {
+            "in": Config.queue_memorize(),
+            "out": Config.queue_memorized(),
+            "processor": MediaGrabberMemorizeProcessor(injector.get(MediaGrabber)),
+        },
+        {
+            "in": Config.queue_recognize(),
+            "out": Config.queue_recognized(),
+            "processor": MediaGrabberRecognizeProcessor(injector.get(MediaGrabber)),
+        }
+    ]
+
+    for consumerConfig in consumersConfigs:
+        Consumer(channel, consumerConfig["in"], consumerConfig["out"], consumerConfig["processor"])
 
     try:
         channel.start_consuming()
