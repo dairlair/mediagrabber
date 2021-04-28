@@ -26,7 +26,7 @@ class Consumer(object):
         processor: MessageProcessorInterface,
     ):
         self.channel = channel
-        self.queue_in = queue_out
+        self.queue_out = queue_out
         self.channel.queue_declare(queue_in, durable=True)
         self.channel.queue_declare(queue_out, durable=True)
         self.processor = processor
@@ -43,7 +43,7 @@ class Consumer(object):
             response = {**payload, **message}
             body = json.dumps(response)
             logging.info(f"Outcoming message prepared: {body}")
-            self.channel.basic_publish("", self.queue_in, body)
+            self.channel.basic_publish("", self.queue_out, body)
 
         # We have processed all the messages from the processor, now we ack incoming message
         ch.basic_ack(delivery_tag=method.delivery_tag)
