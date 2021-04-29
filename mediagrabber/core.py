@@ -49,7 +49,7 @@ class RetrievedFrameResponse:
 class FramesRetrieverInterface(ABC):
     @abstractmethod
     def retrieve(self, file: str) -> List[RetrievedFrameResponse]:
-        """Reads the video file and retrieves frames in the Pillow library format.
+        """Reads the media file and retrieves frames in the Pillow library format.
 
         Args:
             file (str): Path to the file
@@ -284,7 +284,7 @@ class MediaGrabber(ABC):
         tolerance: float = 0.6,
     ) -> List[DetectedFaceResponse]:
         frames: List[RetrievedFrameResponse] = self.retriever_factory.get_frames_retriever(filename).retrieve(filename)
-        logging.info(f"{len(frames)} frames retrieved from video file")
+        logging.info(f"{len(frames)} frames retrieved from media file")
 
         if resize_height is not None:
             frames = self.resizer.resize(frames, resize_height)
