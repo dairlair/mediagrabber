@@ -15,6 +15,12 @@ class Config:
     def log_level() -> str:
         return os.environ.get("LOG_LEVEL", "WARNING")
 
+    # RDBMS DSN
+    @staticmethod
+    def dsn() -> str:
+        default = "postgresql://mediagrabber:mediagrabber@localhost:5432/mediagrabber"
+        return os.environ.get("DSN", default)
+
     # AMQP settings
     @staticmethod
     def amqp_url() -> str:
@@ -22,12 +28,20 @@ class Config:
         return os.environ.get("AMQP_URL", default)
 
     @staticmethod
-    def queue_in() -> str:
-        return os.environ.get("AMQP_IN", "mediagrabber.in")
+    def queue_memorize() -> str:
+        return os.environ.get("AMQP_MEMORIZE", "mediagrabber.memorize")
 
     @staticmethod
-    def queue_out() -> str:
-        return os.environ.get("AMQP_OUT", "mediagrabber.out")
+    def queue_memorized() -> str:
+        return os.environ.get("AMQP_MEMORIZED", "mediagrabber.memorized")
+
+    @staticmethod
+    def queue_recognize() -> str:
+        return os.environ.get("AMQP_RECOGNIZE", "mediagrabber.recognize")
+
+    @staticmethod
+    def queue_recognized() -> str:
+        return os.environ.get("AMQP_RECOGNIZED", "mediagrabber.recognized")    
 
     @staticmethod
     def require(variable) -> str:

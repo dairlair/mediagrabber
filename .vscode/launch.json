@@ -23,6 +23,32 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "CLI Memorize",
+            "type": "python",
+            "request": "launch",
+            "program": "./app/cli/cli.py",
+            "args": [
+                "memorize",
+                "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad", 
+                "video", 
+                "entity",
+                "1",
+                "publication",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "CLI Recognize",
+            "type": "python",
+            "request": "launch",
+            "program": "./app/cli/cli.py",
+            "args": [
+                "recognize",
+                "1",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "AMQP Application",
             "type": "python",
             "request": "launch",

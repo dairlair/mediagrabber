@@ -2,7 +2,10 @@
 
 [![codecov](https://codecov.io/gh/dairlair/mediagrabber/branch/master/graph/badge.svg?token=P76Zts58lp)](undefined)
 
-The cloud native application for media grabbing. The application listens the specified queue with AMQP and expects messages in the format:
+The cloud native application for the face recognition from the media.
+
+## Memorizing
+For the faces memorizing the application listens the specified queue (`mediagrabber.memorize`, is configurable) through AMQP and expects messages in the format:
 ```json
 {"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
 ```
@@ -10,9 +13,25 @@ The cloud native application for media grabbing. The application listens the spe
 You can run the faces retrieving with customized params:
 ```json
 {
-    "url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309",
-    "tolerance": 0.45
+    "url": "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c",
+    "tolerance": 0.45,
+    "source": "youtubedl", 
+    "entity": "publication",
+    "id": 2,
+    "tags": ["publication","bridgette"]
 }
+```
+
+
+
+For the faces recogntion send this event to the queue `mediagrabber.recognize`:
+```json
+{"faceId": 1}
+```
+
+Or customized:
+```json
+{"faceId": 1, "count": 10, "tags": ["unsplash"]}
 ```
 
 ## Run, using CLI interface
@@ -42,4 +61,20 @@ Or download, retrieve and save faces in one command with (just specify URL inste
 ```sh
 python app/cli/cli.py retrieve "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"
 python app/cli/cli.py retrieve "https://pornhub.com/view_video.php?viewkey=ph5fcea9ba0ae13" --resize_height=180
+```
+
+### Download video, retrieve faces and calculate embeddings
+
+```sh
+python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph5fd7bc93973ad" youtubedl publication 1 publication,tag1,tag2
+python app/cli/cli.py memorize "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309" youtubedl publication 1 publication,tag1,tag2
+# And mor than 44 minutes of breathtaking Bridgette B...
+python app/cli/cli.py memorize "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c" youtubedl publication 2 publication,bridgette
+# Or you can memorize the picture by the direct URL
+# Photo with small faces:
+python app/cli/cli.py memorize "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=687&q=100" direct publication 3 publication,unsplash
+# Photo with big face:
+python app/cli/cli.py memorize "https://images.unsplash.com/photo-1557296387-5358ad7997bb?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=694&q=80" direct publication 3 publication,unsplash
+# Recognize faces:
+python app/cli/cli.py recognize 1 --count=10 --tags=unsplash
 ```

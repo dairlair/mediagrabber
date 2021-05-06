@@ -1,4 +1,4 @@
-from mediagrabber.core import VideoDownloaderInterface, DownloadedVideoResponse
+from mediagrabber.core import MediaDownloaderInterface, DownloadedMediaResponse
 from mediagrabber.core import MediaGrabberError
 import subprocess
 import os
@@ -8,25 +8,25 @@ import logging
 import time
 
 
-class YoutubedlVideoDownloader(VideoDownloaderInterface):
+class YoutubedlVideoDownloader(MediaDownloaderInterface):
     workdir: str
 
     def __init__(self, workdir: str) -> None:
         self.workdir = workdir
 
-    def download(self, video_page_url: str) -> DownloadedVideoResponse:
+    def download(self, url: str) -> DownloadedMediaResponse:
         """
         Downloads videos from the specified page and stores the file
         in the `workdirectory`.
         Returns the full path to the downloaded video file.
         """
-        video_directory = self.create_video_directory(video_page_url)
+        video_directory = self.create_video_directory(url)
         path = os.path.join(video_directory, "source.%(ext)s")
         command = [
             "youtube-dl",
             "-f",
             "bestvideo[height<=360]+bestaudio/best[height<=360]",
-            video_page_url,
+            url,
             "-o",
             path,
         ]
@@ -50,7 +50,7 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
         # Wait for date to terminate. Get return returncode ##
         return_code = process.wait()
         if return_code != 0:
-            return DownloadedVideoResponse(return_code, output, None, None)
+            return DownloadedMediaResponse(return_code, output, None, None)
 
         # Try to find downloadded file
         mask = os.path.join(video_directory, "source.*")
@@ -60,10 +60,10 @@ class YoutubedlVideoDownloader(VideoDownloaderInterface):
 
         duration = time.time() - started_at
 
-        return DownloadedVideoResponse(process.returncode, output, str(path), duration)
+        return DownloadedMediaResponse(process.returncode, output, str(path), duration)
 
-    def create_video_directory(self, video_page_url: str) -> str:
-        hash = hashlib.md5(video_page_url.encode("utf-8")).hexdigest()
+    def create_video_directory(self, url: str) -> str:
+        hash = hashlib.md5(url.encode("utf-8")).hexdigest()
         directory = os.path.join(self.workdir, hash)
 
         try:

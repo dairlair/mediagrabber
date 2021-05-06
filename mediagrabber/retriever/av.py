@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 class AvFramesRetriever(FramesRetrieverInterface):
     """
-    Retrieve images with faces from the give video file.
-    Uses av library to read the file.
+    Retrieve images with faces from the given video file.
+    Uses the `av` library to read the file.
     """
 
     def retrieve(self, file: str) -> List[RetrievedFrameResponse]:

@@ -9,15 +9,26 @@ from mediagrabber.config import Config
 from app.amqp.consumer import Consumer, MessageProcessorInterface
 
 
-class MediaGrabberRetriveProcessor(MessageProcessorInterface):
+class MediaGrabberMemorizeProcessor(MessageProcessorInterface):
     def __init__(self, service: MediaGrabber) -> None:
         self.service = service
 
     def process(self, payload: dict) -> List[dict]:
         # Payload may contains properties, not intended to be passed to the retrieve function, lets filter them.
-        args = {k: v for k, v in payload.items() if k in self.service.retrieve.__code__.co_varnames}
+        args = {k: v for k, v in payload.items() if k in self.service.memorize.__code__.co_varnames}
 
-        return self.service.retrieve(**args)
+        return self.service.memorize(**args)
+
+
+class MediaGrabberRecognizeProcessor(MessageProcessorInterface):
+    def __init__(self, service: MediaGrabber) -> None:
+        self.service = service
+
+    def process(self, payload: dict) -> List[dict]:
+        # Payload may contains properties, not intended to be passed to the retrieve function, lets filter them.
+        args = {k: v for k, v in payload.items() if k in self.service.recognize.__code__.co_varnames}
+
+        return self.service.recognize(**args)
 
 
 if __name__ == "__main__":
@@ -34,8 +45,21 @@ if __name__ == "__main__":
     channel.basic_qos(prefetch_count=1)
 
     # Create consumer
-    processor = MediaGrabberRetriveProcessor(injector.get(MediaGrabber))
-    Consumer(channel, Config.queue_in(), Config.queue_out(), processor)
+    consumersConfigs = [
+        {
+            "in": Config.queue_memorize(),
+            "out": Config.queue_memorized(),
+            "processor": MediaGrabberMemorizeProcessor(injector.get(MediaGrabber)),
+        },
+        {
+            "in": Config.queue_recognize(),
+            "out": Config.queue_recognized(),
+            "processor": MediaGrabberRecognizeProcessor(injector.get(MediaGrabber)),
+        }
+    ]
+
+    for consumerConfig in consumersConfigs:
+        Consumer(channel, consumerConfig["in"], consumerConfig["out"], consumerConfig["processor"])
 
     try:
         channel.start_consuming()
