@@ -48,7 +48,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Apply migrations
       env:
-        DSN: postgresql://mediagrabber:secret@postgres:5432/mediagrabber
+        DSN: postgresql://mediagrabber:secret@localhost:5432/mediagrabber
       run: |
         make migrate
     - name: Test with pytest
