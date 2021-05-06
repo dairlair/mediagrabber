@@ -22,6 +22,8 @@ jobs:
           POSTGRES_DB: mediagrabber
           POSTGRES_USER: mediagrabber
           POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 8s
@@ -52,7 +54,7 @@ jobs:
     - name: Test with pytest
       env:
         LOG_LEVEL: WARN
-        DSN: postgresql://mediagrabber:secret@postgres:5432/mediagrabber
+        DSN: postgresql://mediagrabber:secret@localhost:5432/mediagrabber
       run: |
         python -m pytest --cov=./ --cov-report=xml
     - name: Upload coverage to Codecov
