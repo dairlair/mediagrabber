@@ -22,6 +22,11 @@ jobs:
           POSTGRES_DB: mediagrabber
           POSTGRES_USER: mediagrabber
           POSTGRES_PASSWORD: secret
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 8s
+          --health-timeout 4s
+          --health-retries 6
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
