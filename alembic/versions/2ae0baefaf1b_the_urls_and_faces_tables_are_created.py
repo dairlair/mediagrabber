@@ -23,7 +23,6 @@ def upgrade():
         sa.Column("id", sa.BigInteger(), nullable=False),
         sa.Column("url_id", sa.BigInteger(), nullable=False),
         sa.Column("ts", sa.Float(), nullable=False),
-        sa.Column("face_id", sa.SmallInteger(), nullable=False),
         sa.Column("box", postgresql.ARRAY(sa.SmallInteger(), as_tuple=True), nullable=True),
         sa.Column("entity", sa.String(), nullable=False),
         sa.Column("entity_id", sa.String(), nullable=False),

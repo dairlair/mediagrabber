@@ -19,7 +19,6 @@ class Base64FacePublisher(FacesPublisherInterface):
             assert isinstance(face, DetectedFaceResponse)
             messages.append(
                 {
-                    "faceId": face.id,
                     "contentBase64": self.convert_image_to_base64(face.img),
                     "ts": face.ts,
                     "pts": face.pts,

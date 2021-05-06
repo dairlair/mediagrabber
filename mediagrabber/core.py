@@ -82,11 +82,6 @@ class FramesResizerInterface(ABC):
 
 @dataclass
 class DetectedFaceResponse:
-    """
-    id: str The face number on the frame
-    """
-
-    id: str
     img: Image
     ts: float
     pts: int
@@ -128,7 +123,6 @@ class StorageInterface(ABC):
         self,
         urlId: int,
         ts: float,
-        faceId: int,
         box: List[int],
         entity: str,
         entityId: int,
@@ -261,7 +255,7 @@ class MediaGrabber(ABC):
             tags = prepare_tags(tags)
             encodings_ids.append(
                 self.storage.save_encoding(
-                    urlId, face.ts, face.id, box, entity, id, tags, self.detector.get_id(), face.encoding
+                    urlId, face.ts, box, entity, id, tags, self.detector.get_id(), face.encoding
                 )
             )
 

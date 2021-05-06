@@ -29,7 +29,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
             locations = face_recognition.face_locations(image, number_of_upsamples, locate_model)
             encodings = face_recognition.face_encodings(image, locations, num_jitters, encode_model)
 
-            for i, ((top, right, bottom, left), encoding) in enumerate(zip(locations, encodings)):
+            for (top, right, bottom, left), encoding in zip(locations, encodings):
                 if self.is_known(encoding, tolerance):
                     # Face already is found and should be skipped
                     continue
@@ -37,9 +37,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
                 # Crop the face from frame and add to results
                 face = frame.img.crop(box=(left, top, right, bottom))
                 box = self.create_box(left, top, right, bottom)
-                detected_faces.append(DetectedFaceResponse(i, face, frame.ts, frame.pts, box, encoding))
-
-            # @TODO Add frame saving if it is required
+                detected_faces.append(DetectedFaceResponse(face, frame.ts, frame.pts, box, encoding))
 
         return detected_faces
 

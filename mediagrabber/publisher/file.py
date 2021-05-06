@@ -11,8 +11,8 @@ class FileFacePublisher(FacesPublisherInterface):
     """
     def publish(self, faces: List[DetectedFaceResponse], directory: str) -> List[dict]:
         filenames = []
-        for face in faces:
-            filename: str = path.join(directory, face.id + '.png')
+        for i, face in enumerate(faces):
+            filename: str = path.join(directory, i + '.png')
             face.img.save(filename)
             filenames.append(filename)
 

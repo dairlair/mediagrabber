@@ -29,13 +29,15 @@ class PostgreSQLStorage:
 
     def get_faces(self, tags: List[str]) -> List[Face]:
         with self.session() as session:
-            return session.query(Face).filter(Face.tags.overlap([tags])).all()
+            if len(tags):
+                return session.query(Face).filter(Face.tags.overlap([tags])).all()
+            else:
+                return session.query(Face).all()
 
     def save_encoding(
         self,
         urlId: int,
         ts: float,
-        faceId: int,
         box: List[int],
         entity: str,
         entityId: int,
@@ -47,7 +49,6 @@ class PostgreSQLStorage:
             model: Face = Face()
             model.urlId = urlId
             model.ts = ts
-            model.faceId = faceId
             model.box = box
             model.entity = entity
             model.entityId = entityId

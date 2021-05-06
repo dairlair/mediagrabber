@@ -27,3 +27,11 @@ run: image
 publish: image
 	docker push $(DOCKER_REGISTRY_IMAGE):$(RELEASE)
 	docker push $(DOCKER_REGISTRY_IMAGE):latest
+
+.PHONY: migrate
+migrate:
+	alembic upgrade head
+
+.PHONY: remigrate
+remigrate:
+	alembic downgrade base && alembic upgrade head

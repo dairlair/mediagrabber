@@ -10,8 +10,6 @@ class Face(Base):
     id = Column(BigInteger, primary_key=True)
     urlId = Column("url_id", BigInteger, nullable=False)
     ts = Column(Float, nullable=False)
-    #  @TODO Find appropriate name for the column "face_id", because it is not a face, just a face position in the frame
-    faceId = Column("face_id", SmallInteger, nullable=False)  # An unique face number in the one frame
     box = Column(ARRAY(SmallInteger, as_tuple=True))  # Face paddings, in the CSS format (top, right, bottom, left)
     entity = Column(String, nullable=False, default="")
     entityId = Column("entity_id", String, nullable=False, default=0)
@@ -21,4 +19,4 @@ class Face(Base):
     createdAt = Column("created_at", DateTime(timezone=True), nullable=False, default=text("CURRENT_TIMESTAMP"))
 
     def __repr__(self):
-        return f"<Face(id={self.id}, urlId={self.urlId}, ts={self.ts}, faceId={self.faceId})"
+        return f"<Face(id={self.id}, urlId={self.urlId}, ts={self.ts}, box={self.box})"
