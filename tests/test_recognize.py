@@ -33,7 +33,11 @@ class TestRecognize:
             for piece in result:
                 memorizedFaceIds = memorizedFaceIds + piece["faces"]
 
+        assert len(memorizedFaceIds) > len(urls)
+
         for faceId in memorizedFaceIds:
-            recognizedFaces = mg.recognize(faceId, len(memorizedFaceIds))
-            assert recognizedFaces == {}
-            assert len(recognizedFaces) == len(memorizedFaceIds)
+            result = mg.recognize(faceId, len(memorizedFaceIds))
+            assert isinstance(result, List), "Recognize function must return the list"
+            for piece in result:
+                assert "faces" in piece, "Each piece must have an `faces` field"
+                assert len(piece["faces"]) == len(memorizedFaceIds)

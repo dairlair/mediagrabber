@@ -265,7 +265,7 @@ class MediaGrabber(ABC):
         # @TODO Implement face existense check
         tags = prepare_tags(tags)
         distances = self.distancer.get_nns_by_face_id(faceId, count, tags)
-        return [{"success": True, "distances": [x.__dict__ for x in distances]}]
+        return [{"success": True, "faces": [x.__dict__ for x in distances]}]
 
     def get_faces(
         self,
