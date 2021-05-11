@@ -37,8 +37,8 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        wget https://yt-dl.org/downloads/latest/youtube-dl -O /usr/local/bin/youtube-dl
-        chmod a+rx /usr/local/bin/youtube-dl
+        wget https://yt-dl.org/downloads/latest/youtube-dl -O youtube-dl
+        chmod a+rx youtube-dl
         youtube-dl --version
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov
