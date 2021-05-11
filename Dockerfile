@@ -10,7 +10,7 @@ COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
 
-ADD . /mediagrabber
+COPY . /mediagrabber
 RUN pip install -e .
 
 ENV LOG_LEVEL=WARNING
