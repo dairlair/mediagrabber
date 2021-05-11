@@ -9,8 +9,6 @@ WORKDIR /mediagrabber
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
-ADD requirements.txt /mediagrabber/requirements.txt
-RUN pip install -r requirements.txt
 
 ADD . /mediagrabber
 RUN pip install -e .

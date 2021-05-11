@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     name: Build and Tests
-    runs-on: ubuntu-latest
+    container: dairlair/face-recognition-docker:0.0.1
     services:
       postgres:
         image: postgres
@@ -37,12 +37,9 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        wget https://yt-dl.org/downloads/latest/youtube-dl -O youtube-dl
-        chmod a+rx youtube-dl
-        youtube-dl --version
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -r
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -51,13 +48,13 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Apply migrations
       env:
-        DSN: postgresql://mediagrabber:secret@localhost:5432/mediagrabber
+        DSN: postgresql://mediagrabber:secret@postgres:5432/mediagrabber
       run: |
         make migrate
     - name: Test with pytest
       env:
         LOG_LEVEL: WARN
-        DSN: postgresql://mediagrabber:secret@localhost:5432/mediagrabber
+        DSN: postgresql://mediagrabber:secret@postgres:5432/mediagrabber
       run: |
         python -m pytest --cov=./ --cov-report=xml
     - name: Upload coverage to Codecov
