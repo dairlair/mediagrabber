@@ -15,7 +15,7 @@ jobs:
   build:
     name: Build and Tests
     runs-on: ubuntu-latest
-    container: dairlair/mediagrabber-base:0.1.0
+    container: dairlair/mediagrabber-base:0.2.0
     services:
       postgres:
         image: postgres
@@ -38,7 +38,6 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        pip install flake8 pytest pytest-cov
         pip install -r requirements.txt
     - name: Lint with flake8
       run: |
