@@ -1,4 +1,4 @@
-FROM dairlair/face-recognition-docker:0.0.1
+FROM dairlair/mediagrabber-base:0.2.0
 
 COPY install-packages.sh .
 RUN chmod +x ./install-packages.sh
@@ -6,13 +6,11 @@ RUN ./install-packages.sh
 
 WORKDIR /mediagrabber
 
-COPY requirements.txt /tmp/
+COPY requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
-ADD requirements.txt /mediagrabber/requirements.txt
-RUN pip install -r requirements.txt
 
-ADD . /mediagrabber
+COPY . /mediagrabber
 RUN pip install -e .
 
 ENV LOG_LEVEL=WARNING
