@@ -24,4 +24,4 @@ ENV AMQP_OUT=mediagrabber.out
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "mediagrabber/amqp.py"]
+CMD ["python", "app/amqp/amqp.py"]
