@@ -15,7 +15,7 @@ You can run the faces retrieving with customized params:
 {
     "url": "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c",
     "tolerance": 0.45,
-    "source": "youtubedl", 
+    "downloader": "youtubedl", 
     "entity": "publication",
     "id": 2,
     "tags": ["publication","bridgette"]
