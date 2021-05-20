@@ -174,13 +174,13 @@ class MediaGrabber(ABC):
         self.downloader_factory = downloader_factory
         self.distancer = distancer
 
-    def download(self, url: str, source: str = "youtubedl") -> dict:
-        return self.downloader_factory.get_media_downloader(source).download(url).__dict__
+    def download(self, url: str, downloader: str = "youtubedl") -> dict:
+        return self.downloader_factory.get_media_downloader(downloader).download(url).__dict__
 
     def retrieve(
         self,
         url: str,
-        source: str,
+        downloader: str,
         resize_height: int = None,
         number_of_upsamples: int = 1,
         locate_model: str = "fog",
@@ -205,7 +205,7 @@ class MediaGrabber(ABC):
             tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
                 0.6 is typical best performance.
         """
-        filename = self.get_file_path(url, source)
+        filename = self.get_file_path(url, downloader)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
@@ -219,7 +219,7 @@ class MediaGrabber(ABC):
     def memorize(
         self,
         url: str,
-        source: str = "youtubedl",  # @TODO Implement photos support by the direct URL
+        downloader: str = "youtubedl",  # @TODO Implement photos support by the direct URL
         entity: str = "default",
         id: str = 0,
         tags: List[str] = list(),
@@ -229,7 +229,7 @@ class MediaGrabber(ABC):
 
         Args:
             url (str): URL or path to file.
-            source (str): video or photo. Should be used for downloader factory using.
+            downloader (str): downloader
             entity (str): The name of entity (used for external linkage).
             id (str): [description] The id of entity (used for external linkage).
             tags (List[str]): The tags, which are associated with the file. Used for further recognition.
@@ -242,7 +242,7 @@ class MediaGrabber(ABC):
         urlId: int = self.storage.get_url_id_or_create(url)
         logging.info(f"URL ID: {urlId}")
 
-        filename = self.get_file_path(url, source)
+        filename = self.get_file_path(url, downloader)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
@@ -286,9 +286,9 @@ class MediaGrabber(ABC):
 
         return self.detector.detect(frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance)
 
-    def get_file_path(self, url: str, source: str = "direct") -> str:
+    def get_file_path(self, url: str, downloader: str = "direct") -> str:
         if is_url(url):
-            downloader: MediaDownloaderInterface = self.downloader_factory.get_media_downloader(source)
+            downloader: MediaDownloaderInterface = self.downloader_factory.get_media_downloader(downloader)
             return downloader.download(url).path
 
         if path.exists(url):

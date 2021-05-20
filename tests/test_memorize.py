@@ -43,10 +43,10 @@ class TestMemorizingFromPhotos:
     def test_memorizing_from_video_urls(self, mg, video_urls):
         self.memorizing(mg, video_urls, "youtubedl")
 
-    def memorizing(self, mg, addresses, source="youtubedl"):
+    def memorizing(self, mg, addresses, downloader="youtubedl"):
         mg: MediaGrabber = mg
         for file in addresses:
-            result = mg.memorize(file, source)
+            result = mg.memorize(file, downloader)
             assert isinstance(result, List), "The `memorize` response must be a list"
             for piece in result:
                 assert "faces" in piece, "Each piece of response must contains faces attributes"
