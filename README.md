@@ -10,7 +10,7 @@ For the faces memorizing the application listens the specified queue (`mediagrab
 {"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
 ```
 
-You can run the faces retrieving with customized params:
+You can run the faces remorizing with customized params:
 ```json
 {
     "url": "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c",
