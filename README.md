@@ -10,7 +10,7 @@ For the faces memorizing the application listens the specified queue (`mediagrab
 {"url": "https://abcnews.go.com/Technology/video/california-judge-orders-uber-lyft-reclassify-drivers-employees-72302309"}
 ```
 
-You can run the faces retrieving with customized params:
+You can run the faces remorizing with customized params:
 ```json
 {
     "url": "https://www.pornhub.com/view_video.php?viewkey=ph602eac372883c",
@@ -20,6 +20,19 @@ You can run the faces retrieving with customized params:
     "id": 2,
     "tags": ["publication","bridgette"]
 }
+```
+
+The result will be published to the in format:
+```json
+{
+    "id": 9, 
+    "url": "https://edition.cnn.com/videos/politics/2021/05/19/jim-mcgovern-kevin-mccarthy-weak-january-6-commission-sot-vpx.cnn/video/playlists/this-week-in-politics/", "entity": "Investigation", 
+    "tolerance": 0.45, 
+    "tags": ["Investigation"], 
+    "downloader": "youtubedl", 
+    "success": true,
+    "resolution": "File [https://edition.cnn.com/videos/politics/2021/05/19/jim-mcgovern-kevin-mccarthy-weak-january-6-commission-sot-vpx.cnn/video/playlists/this-week-in-politics/] memorized successfully", 
+    "faces": [364, 365, 366]}
 ```
 
 
