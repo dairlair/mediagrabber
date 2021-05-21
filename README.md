@@ -22,6 +22,19 @@ You can run the faces remorizing with customized params:
 }
 ```
 
+The result will be published to the in format:
+```json
+{
+    "id": 9, 
+    "url": "https://edition.cnn.com/videos/politics/2021/05/19/jim-mcgovern-kevin-mccarthy-weak-january-6-commission-sot-vpx.cnn/video/playlists/this-week-in-politics/", "entity": "Investigation", 
+    "tolerance": 0.45, 
+    "tags": ["Investigation"], 
+    "downloader": "youtubedl", 
+    "success": true,
+    "resolution": "File [https://edition.cnn.com/videos/politics/2021/05/19/jim-mcgovern-kevin-mccarthy-weak-january-6-commission-sot-vpx.cnn/video/playlists/this-week-in-politics/] memorized successfully", 
+    "faces": [364, 365, 366]}
+```
+
 
 
 For the faces recogntion send this event to the queue `mediagrabber.recognize`:
