@@ -47,6 +47,11 @@ Or customized:
 {"faceId": 1, "count": 10, "tags": ["unsplash"]}
 ```
 
+The response message example:
+```json
+{"faceId": 1, "count": 2, "success": true, "faces": [{"faceId": 1, "distance": 0.0}, {"faceId": 310, "distance": 0.0}]}
+```
+
 ## Run, using CLI interface
 
 Before using the MediaGrabber in the cloned repository you need to install [youtube-dl](https://github.com/ytdl-org/youtube-dl#installation).
