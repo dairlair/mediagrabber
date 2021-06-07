@@ -261,7 +261,19 @@ class MediaGrabber(ABC):
 
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
 
-    def recognize(self, faceId: int, count: int = 10, tags: List[str] = list()) -> dict:
+    def recognize(self, faceId: int, count: int = 10, tags: List[str] = list(), tolerance: float = 0.45) -> dict:
+        """Find most similar faces
+
+        Args:
+            faceId (int): The base face ID.
+            count (int, optional): Number of the similar faces. Defaults to 10.
+            tags (List[str], optional): The tags allowed to search. Defaults to list(), which means all tags.
+            tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
+                0.6 is typical best performance. Defaults to 0.45.
+
+        Returns:
+            dict: [{"sucess": true, "faces": [{faceId=1,distance=0.2}]}]
+        """
         # @TODO Implement face existense check
         tags = prepare_tags(tags)
         distances = self.distancer.get_nns_by_face_id(faceId, count, tags)
