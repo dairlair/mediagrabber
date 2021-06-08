@@ -170,7 +170,7 @@ class MediaGrabber(ABC):
         self.resizer = resizer
         self.detector = detector
         self.publisher = publisher
-        self.storage = storage
+        self.storage = storage 
         self.downloader_factory = downloader_factory
         self.distancer = distancer
 
@@ -261,7 +261,7 @@ class MediaGrabber(ABC):
 
         return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
 
-    def recognize(self, faceId: int, count: int = 10, tags: List[str] = list(), tolerance: float = 0.45) -> dict:
+    def recognize(self, faceId: int, count: int = 10, tags: List[str] = list(), tolerance: float = 0.5) -> dict:
         """Find most similar faces
 
         Args:
@@ -276,8 +276,11 @@ class MediaGrabber(ABC):
         """
         # @TODO Implement face existense check
         tags = prepare_tags(tags)
-        distances = self.distancer.get_nns_by_face_id(faceId, count, tags)
-        return [{"success": True, "faces": [x.__dict__ for x in distances]}]
+        # We require additional similar face, because the most similar will be the save, when we use recognize w/o tags.
+        distances = self.distancer.get_nns_by_face_id(faceId, count + 1, tags)
+        # We return only matched faces closer than specified tolerance, and not equals to required face
+        filtered_distances = [d for d in distances if d.distance <= tolerance and d.faceId != faceId]
+        return [{"success": True, "faces": [x.__dict__ for x in filtered_distances]}]
 
     def get_faces(
         self,
