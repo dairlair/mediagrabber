@@ -8,6 +8,8 @@ from PIL.Image import Image
 from injector import inject
 import os
 import numpy as np
+from io import BytesIO
+from base64 import b64encode
 
 
 @dataclass
@@ -142,6 +144,7 @@ class FaceDistance:
     faceId: int
     distance: float
 
+
 class DistancerInterface(ABC):
     def __init__(self, storage: StorageInterface) -> None:
         self.storage = storage
@@ -170,7 +173,7 @@ class MediaGrabber(ABC):
         self.resizer = resizer
         self.detector = detector
         self.publisher = publisher
-        self.storage = storage 
+        self.storage = storage
         self.downloader_factory = downloader_factory
         self.distancer = distancer
 
@@ -224,6 +227,7 @@ class MediaGrabber(ABC):
         id: str = 0,
         tags: List[str] = list(),
         tolerance: float = 0.45,
+        metadata: bool = False,
     ) -> List[dict]:
         """Retrieves faces from the file and memorize thems into the database.
 
@@ -235,6 +239,7 @@ class MediaGrabber(ABC):
             tags (List[str]): The tags, which are associated with the file. Used for further recognition.
             tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
                 0.6 is typical best performance. Defaults to 0.45.
+            metadata(bool, optional): Specifies - returns the retrieved faces metadata or not. Defaults to False.
 
         Returns:
             [List[dict]]: Returns information about memorized faces.
@@ -250,16 +255,26 @@ class MediaGrabber(ABC):
         logging.info(f"{len(faces)} faces found")
 
         encodings_ids = []
+        faces_metadata = []
         for face in faces:
             box = list((face.box["top"], face.box["right"], face.box["bottom"], face.box["left"]))
             tags = prepare_tags(tags)
-            encodings_ids.append(
-                self.storage.save_encoding(
-                    urlId, face.ts, box, entity, id, tags, self.detector.get_id(), face.encoding
-                )
+            faceId = self.storage.save_encoding(
+                urlId, face.ts, box, entity, id, tags, self.detector.get_id(), face.encoding
             )
+            encodings_ids.append(faceId)
+            if metadata:
+                imgBase64: str = convert_image_to_base64(face.img)
+                faces_metadata.append({"faceId": faceId, "ts": face.ts, "box": box, "imgBase64": imgBase64})
 
-        return [{"success": True, "resolution": f"File [{url}] memorized successfully", "faces": encodings_ids}]
+        return [
+            {
+                "success": True,
+                "resolution": f"File [{url}] memorized successfully",
+                "faces": encodings_ids,
+                "metadata": faces_metadata,
+            }
+        ]
 
     def recognize(self, faceId: int, count: int = 10, tags: List[str] = list(), tolerance: float = 0.5) -> dict:
         """Find most similar faces
@@ -318,3 +333,17 @@ def prepare_tags(tags: List[str]) -> List[str]:
     tags = list(tags)
     assert isinstance(tags, List)
     return tags
+
+
+def convert_image_to_base64(img: Image) -> str:
+    """Convert PIL Image to the string, using the base64 encoder
+
+    Args:
+        img (Image):  PIL Image
+
+    Returns:
+        str: Base64 encoded string with image content
+    """
+    buffer = BytesIO()
+    img.save(buffer, format="webp")
+    return "data:image/webp;base64," + b64encode(buffer.getvalue()).decode()
