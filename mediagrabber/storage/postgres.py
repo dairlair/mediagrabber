@@ -8,7 +8,7 @@ from mediagrabber.storage.model.face import Face
 
 class PostgreSQLStorage:
     def __init__(self, dsn: str):
-        engine = create_engine(dsn, echo=True, future=True)
+        engine = create_engine(dsn, future=True)
         self.session = sessionmaker(engine)
 
     def get_url_id_or_create(self, url: str) -> int:
