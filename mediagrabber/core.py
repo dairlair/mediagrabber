@@ -224,7 +224,7 @@ class MediaGrabber(ABC):
         url: str,
         downloader: str = "youtubedl",  # @TODO Implement photos support by the direct URL
         entity: str = "default",
-        id: str = 0,
+        id: str = "0",
         tags: List[str] = list(),
         tolerance: float = 0.45,
         metadata: bool = False,

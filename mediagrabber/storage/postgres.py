@@ -2,6 +2,7 @@ import numpy as np
 from typing import List, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.expression import and_
 from mediagrabber.storage.model.url import Url
 from mediagrabber.storage.model.face import Face
 
@@ -34,17 +35,46 @@ class PostgreSQLStorage:
             else:
                 return session.query(Face).all()
 
+    def get_encoding(
+        self,
+        urlId: int,
+        ts: float,
+        box: List[int],
+        entity: str,
+        entityId: str,
+        tags: List[str],
+        encoder: str,
+        encoding: np.array,
+    ) -> Optional[Face]:
+        with self.session() as session:
+            return session.query(Face).where(
+                and_(
+                    Face.urlId == urlId,
+                    Face.ts == ts,
+                    Face.box == box,
+                    Face.entity == entity,
+                    Face.entityId == str(entityId),
+                    Face.tags == tags,
+                    Face.encoder == encoder,
+                    Face.encoding == encoding
+                )
+            ).first()
+
     def save_encoding(
         self,
         urlId: int,
         ts: float,
         box: List[int],
         entity: str,
-        entityId: int,
+        entityId: str,
         tags: List[str],
         encoder: str,
         encoding: np.array,
     ) -> int:
+        face = self.get_encoding(urlId, ts, box, entity, entityId, tags, encoder, encoding)
+        if face:
+            return face.id
+
         with self.session() as session:
             model: Face = Face()
             model.urlId = urlId
