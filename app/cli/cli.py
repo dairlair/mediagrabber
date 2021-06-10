@@ -9,6 +9,7 @@ from mediagrabber.config import Config
 def main():
     # Set desired logging level
     logging.basicConfig(level=Config.log_level())
+    logging.getLogger('sqlalchemy.engine').setLevel(Config.log_level())
 
     # Dependency Injection setup
     injector = Injector([configure])

@@ -36,7 +36,6 @@ The result will be published to the in format:
 ```
 
 
-
 For the faces recogntion send this event to the queue `mediagrabber.recognize`:
 ```json
 {"faceId": 1}
@@ -95,4 +94,12 @@ python app/cli/cli.py memorize "https://images.unsplash.com/photo-1517486808906-
 python app/cli/cli.py memorize "https://images.unsplash.com/photo-1557296387-5358ad7997bb?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=694&q=80" direct publication 3 publication,unsplash
 # Recognize faces:
 python app/cli/cli.py recognize 1 --count=10 --tags=unsplash
+```
+
+### Keira Knightley photos test:
+```
+python app/cli/cli.py memorize https://www.indiewire.com/wp-content/uploads/2018/01/keiraknightley.jpg direct "photo" 0 knightley
+python app/cli/cli.py memorize https://www.indiewire.com/wp-content/uploads/2018/10/shutterstock_9933778ce.jpg direct "photo" 0 knightley
+python app/cli/cli.py memorize "https://m.media-amazon.com/images/M/MV5BMTYwNDM0NDA3M15BMl5BanBnXkFtZTcwNTkzMjQ3OA@@._V1_UY317_CR6,0,214,317_AL_.jpg" direct  photo 0 knightley
+python app/cli/cli.py recognize 3 --tolerance=0.5
 ```
