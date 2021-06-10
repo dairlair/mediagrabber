@@ -29,15 +29,15 @@ class TestRecognize:
         # We need to memorize some pictures to lately recognize them
         mg: MediaGrabber = mg
         for url in urls:
-            result = mg.memorize(url, "direct")
+            result = mg.memorize(url, "direct", tags=['test_1'])
             for piece in result:
                 memorizedFaceIds = memorizedFaceIds + piece["faces"]
 
         assert len(memorizedFaceIds) > len(urls)
 
         for faceId in memorizedFaceIds:
-            result = mg.recognize(faceId, len(memorizedFaceIds))
+            result = mg.recognize(faceId, len(memorizedFaceIds) - 1, tags=['test_1'], tolerance=1)
             assert isinstance(result, List), "Recognize function must return the list"
             for piece in result:
                 assert "faces" in piece, "Each piece must have an `faces` field"
-                assert len(piece["faces"]) == len(memorizedFaceIds)
+                assert len(piece["faces"]) > 0
