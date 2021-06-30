@@ -18,6 +18,18 @@ def urls() -> List[str]:
         "tests/data/photos/5faces.jpg",
     ]
 
+@pytest.fixture
+def urls_with_tags() -> List[str]:
+    return [
+        ("tests/data/photos/kira-knightley-1.jpg", ["Kira"]),
+        ("tests/data/photos/kira-knightley-2.jpg", ["Kira"]),
+        ("tests/data/photos/kira-knightley-3.jpg", ["Kira"]),
+        ("tests/data/photos/kira-knightley-4.jpg", ["Kira"]),
+        ("tests/data/photos/cercei-lanister-1.jpg", ["Cercei"]),
+        ("tests/data/photos/cercei-lanister-2.jpg", ["Cercei"]),
+        ("tests/data/photos/cercei-lanister-3.jpg", ["Cercei"]),
+    ]
+
 
 class TestRecognize:
     """Ensures that for each memorized face at we can find similar faces
@@ -41,3 +53,14 @@ class TestRecognize:
             for piece in result:
                 assert "faces" in piece, "Each piece must have an `faces` field"
                 assert len(piece["faces"]) > 0
+
+    def test_recognize_different_tags(self, mg, urls_with_tags):
+        mg: MediaGrabber = mg
+        lastMemorizedFaceId = None
+        for url in urls_with_tags:
+            result = mg.memorize(url[0], "direct", tags=url[1])
+            for piece in result:
+                lastMemorizedFaceId = piece["faces"][-1]
+        assert lastMemorizedFaceId is not None
+
+        recognized = mg.recognize(lastMemorizedFaceId, 1, tags=['Kira'], tolerance=1)

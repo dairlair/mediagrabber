@@ -1,7 +1,7 @@
 """The urls and faces tables are created
 
 Revision ID: 2ae0baefaf1b
-Revises: 
+Revises:
 Create Date: 2021-04-23 00:26:51.979450
 
 """
