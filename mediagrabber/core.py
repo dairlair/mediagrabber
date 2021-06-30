@@ -31,7 +31,7 @@ class DownloadedMediaResponse:
 
 class MediaDownloaderInterface(ABC):
     @abstractmethod
-    def download(self, url: str) -> DownloadedMediaResponse:
+    def download(self, url: str, quality: int) -> DownloadedMediaResponse:
         raise NotImplementedError
 
 
@@ -135,7 +135,11 @@ class StorageInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_faces() -> List[Face]:
+    def get_faces(self, tags: List[str]) -> List[Face]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_face_by_id(self, id: int) -> Optional[Face]:
         raise NotImplementedError
 
 
@@ -150,6 +154,16 @@ class DistancerInterface(ABC):
         self.storage = storage
 
     def get_nns_by_face_id(self, faceId: int, n: int, tags: List[str]) -> List[FaceDistance]:
+        """Returns None, if this specified faceId is not found in the database
+
+        Args:
+            faceId (int): The face ID for recognition
+            n (int): The number of desired neighbours
+            tags (List[str]): The tags for filter faces before recognition
+
+        Returns:
+            List[FaceDistance]|None:
+        """
         raise NotImplementedError
 
 
@@ -180,45 +194,6 @@ class MediaGrabber(ABC):
     def download(self, url: str, downloader: str = "youtubedl") -> dict:
         return self.downloader_factory.get_media_downloader(downloader).download(url).__dict__
 
-    def retrieve(
-        self,
-        url: str,
-        downloader: str,
-        resize_height: int = None,
-        number_of_upsamples: int = 1,
-        locate_model: str = "fog",
-        num_jitters: int = 1,
-        encode_model: str = "small",
-        tolerance: float = 0.6,
-    ) -> List[dict]:
-        """
-        Retrieves faces from the specified file.
-
-        Args:
-            file (str): Path to the file
-            resize_height (int, optional): Desired height for images resizing.
-            number_of_upsamples (int, optional): How many times to upsample the image looking for faces.
-                Higher numbers find smaller faces.
-            locate_model (str, optional): Which face detection model to use. "hog" is less accurate but faster on CPUs.
-                "cnn" is a more accurate deep-learning model which is GPU/CUDA accelerated (if available).
-            num_jitters (int, optional): How many times to re-sample the face when calculating encoding.
-                Higher is more accurate, but slower (i.e. 100 is 100x slower).
-            encode_model (str, optional): which model to use. "large" (default) or "small" which only returns 5 points
-                but is faster.
-            tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
-                0.6 is typical best performance.
-        """
-        filename = self.get_file_path(url, downloader)
-        if filename is None:
-            return [{"success": False, "resolution": f"File [{url}] not found"}]
-
-        faces = self.get_faces(
-            filename, resize_height, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance
-        )
-        logging.info(f"{len(faces)} faces found")
-
-        return self.publisher.publish(faces, path.realpath(path.dirname(filename)))
-
     def memorize(
         self,
         url: str,
@@ -228,6 +203,7 @@ class MediaGrabber(ABC):
         tags: List[str] = list(),
         tolerance: float = 0.45,
         metadata: bool = False,
+        quality: int = 360
     ) -> List[dict]:
         """Retrieves faces from the file and memorize thems into the database.
 
@@ -240,6 +216,8 @@ class MediaGrabber(ABC):
             tolerance (float, optional): How much distance between faces to consider it a match. Lower is more strict.
                 0.6 is typical best performance. Defaults to 0.45.
             metadata(bool, optional): Specifies - returns the retrieved faces metadata or not. Defaults to False.
+            quality (int, optional): The desired limit for quality, if the video will be downloaded.
+                360 means "360p at max". Defaults to 360.
 
         Returns:
             [List[dict]]: Returns information about memorized faces.
@@ -247,7 +225,7 @@ class MediaGrabber(ABC):
         urlId: int = self.storage.get_url_id_or_create(url)
         logging.info(f"URL ID: {urlId}")
 
-        filename = self.get_file_path(url, downloader)
+        filename = self.get_file_path(url, downloader, quality)
         if filename is None:
             return [{"success": False, "resolution": f"File [{url}] not found"}]
 
@@ -316,10 +294,10 @@ class MediaGrabber(ABC):
 
         return self.detector.detect(frames, number_of_upsamples, locate_model, num_jitters, encode_model, tolerance)
 
-    def get_file_path(self, url: str, downloader: str = "direct") -> str:
+    def get_file_path(self, url: str, downloader: str, quality: int) -> str:
         if is_url(url):
             downloader: MediaDownloaderInterface = self.downloader_factory.get_media_downloader(downloader)
-            return downloader.download(url).path
+            return downloader.download(url, quality).path
 
         if path.exists(url):
             return url

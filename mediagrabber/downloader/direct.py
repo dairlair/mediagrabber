@@ -10,7 +10,7 @@ class DirectMediaDownloader(MediaDownloaderInterface):
     def __init__(self, workdir: str) -> None:
         self.workdir = workdir
 
-    def download(self, url: str) -> DownloadedMediaResponse:
+    def download(self, url: str, quality: int) -> DownloadedMediaResponse:
         hash = hashlib.md5(url.encode("utf-8")).hexdigest()
         file = os.path.join(self.workdir, hash + ".jpg")
 

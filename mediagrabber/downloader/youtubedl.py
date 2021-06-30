@@ -14,7 +14,7 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
     def __init__(self, workdir: str) -> None:
         self.workdir = workdir
 
-    def download(self, url: str) -> DownloadedMediaResponse:
+    def download(self, url: str, quality: int) -> DownloadedMediaResponse:
         """
         Downloads videos from the specified page and stores the file
         in the `workdirectory`.
@@ -25,11 +25,12 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
         command = [
             "youtube-dl",
             "-f",
-            "bestvideo[height<=360]+bestaudio/best[height<=360]",
+            f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]",
             url,
             "-o",
             path,
         ]
+        logging.info("Command to video download: " + ' '.join(command))
 
         started_at = time.time()
         process = subprocess.Popen(

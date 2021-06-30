@@ -35,6 +35,10 @@ class PostgreSQLStorage:
             else:
                 return session.query(Face).all()
 
+    def get_face_by_id(self, id: int) -> Optional[Face]:
+        with self.session() as session:
+            return session.query(Face).filter(Face.id == id).first()
+
     def get_encoding(
         self,
         urlId: int,
