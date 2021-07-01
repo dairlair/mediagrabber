@@ -15,7 +15,7 @@ jobs:
   build:
     name: Build and Tests
     runs-on: ubuntu-latest
-    container: ghcr.io/dairlair/mediagrabber-base@sha256:338323b476624744ae790dbd8f114311aedc9d801baa879252759c5be105af0c
+    container: dairlair/mediagrabber-base:0.3
     services:
       postgres:
         image: postgres
