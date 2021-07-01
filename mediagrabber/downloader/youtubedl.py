@@ -35,7 +35,7 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
             "'-j 16 -s 16 -x 16 -k 5M'",
             "--no-playlist",
         ]
-        print("Command to video download: " + ' '.join(command))
+
         logging.info("Command to video download: " + ' '.join(command))
 
         started_at = time.time()
