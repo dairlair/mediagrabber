@@ -23,12 +23,17 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
         video_directory = self.create_video_directory(url)
         path = os.path.join(video_directory, "source.%(ext)s")
         command = [
-            "youtube-dl",
+            "yt-dlp",
             "-f",
             f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]",
             url,
             "-o",
             path,
+            "--external-downloader",
+            "aria2c",
+            "--external-downloader-args",
+            "-j 16 -s 16 -x 16 -k 5M",
+            "--no-playlist",
         ]
         logging.info("Command to video download: " + ' '.join(command))
 
