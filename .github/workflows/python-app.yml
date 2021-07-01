@@ -3,11 +3,11 @@ name: Python application
 on:
   push:
     branches:
-      - master
+      - main
       # branches used to test the workflow
       - "workflow-test-*"
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   release:
     types: [published, created, edited]
 

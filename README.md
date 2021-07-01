@@ -1,6 +1,6 @@
 # MediaGrabber
 
-[![codecov](https://codecov.io/gh/dairlair/mediagrabber/branch/master/graph/badge.svg?token=P76Zts58lp)](undefined)
+[![codecov](https://codecov.io/gh/dairlair/mediagrabber/branch/main/graph/badge.svg?token=P76Zts58lp)](undefined)
 
 The cloud native application for the face recognition from the media.
 
