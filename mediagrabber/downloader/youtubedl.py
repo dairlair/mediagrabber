@@ -23,7 +23,7 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
         video_directory = self.create_video_directory(url)
         path = os.path.join(video_directory, "source.%(ext)s")
         command = [
-            "yt-dlp",
+            "youtube-dl",
             "-f",
             f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]",
             url,
