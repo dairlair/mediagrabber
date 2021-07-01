@@ -1,3 +1,4 @@
+from typing import List
 from mediagrabber.core import MediaDownloaderInterface, DownloadedMediaResponse
 from mediagrabber.core import MediaGrabberError
 import subprocess
@@ -14,6 +15,16 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
     def __init__(self, workdir: str) -> None:
         self.workdir = workdir
 
+    def create_download_command(self, url: str, path: str, quality: int) -> List[str]:
+        return [
+            "youtube-dl",
+            "-f",
+            f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]",
+            url,
+            "-o",
+            path,
+        ]
+
     def download(self, url: str, quality: int) -> DownloadedMediaResponse:
         """
         Downloads videos from the specified page and stores the file
@@ -22,19 +33,7 @@ class YoutubedlVideoDownloader(MediaDownloaderInterface):
         """
         video_directory = self.create_video_directory(url)
         path = os.path.join(video_directory, "source.%(ext)s")
-        command = [
-            "yt-dlp",
-            "-f",
-            f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]",
-            url,
-            "-o",
-            path,
-            "--external-downloader",
-            "aria2c",
-            "--external-downloader-args",
-            "'-j 16 -s 16 -x 16 -k 5M'",
-            "--no-playlist",
-        ]
+        command = self.create_download_command(url, path, quality)
 
         logging.info("Command to video download: " + ' '.join(command))
 
