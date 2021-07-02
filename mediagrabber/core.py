@@ -191,8 +191,8 @@ class MediaGrabber(ABC):
         self.downloader_factory = downloader_factory
         self.distancer = distancer
 
-    def download(self, url: str, downloader: str = "youtubedl") -> dict:
-        return self.downloader_factory.get_media_downloader(downloader).download(url).__dict__
+    def download(self, url: str, downloader: str = "youtubedl", quality: int = 360) -> dict:
+        return self.downloader_factory.get_media_downloader(downloader).download(url, quality).__dict__
 
     def memorize(
         self,
@@ -203,7 +203,7 @@ class MediaGrabber(ABC):
         tags: List[str] = list(),
         tolerance: float = 0.45,
         metadata: bool = False,
-        quality: int = 360
+        quality: int = 360,
     ) -> List[dict]:
         """Retrieves faces from the file and memorize thems into the database.
 

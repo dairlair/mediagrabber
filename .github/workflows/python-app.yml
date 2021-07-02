@@ -3,11 +3,11 @@ name: Python application
 on:
   push:
     branches:
-      - master
+      - main
       # branches used to test the workflow
       - "workflow-test-*"
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   release:
     types: [published, created, edited]
 
@@ -15,7 +15,7 @@ jobs:
   build:
     name: Build and Tests
     runs-on: ubuntu-latest
-    container: dairlair/mediagrabber-base:0.2.0
+    container: dairlair/mediagrabber-base:0.3.0
     services:
       postgres:
         image: postgres

@@ -1,4 +1,4 @@
-FROM dairlair/mediagrabber-base:0.2.0
+FROM dairlair/mediagrabber-base:0.3.0
 
 COPY install-packages.sh .
 RUN chmod +x ./install-packages.sh
