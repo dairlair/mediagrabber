@@ -42,7 +42,7 @@ class UniqueFaceDetector(FacesDetectorInterface):
         return detected_faces
 
     def is_known(self, encoding: np.array, tolerance: float) -> bool:
-        results = face_recognition.compare_faces(self.known_encodings, encoding, tolerance)
+        results = face_recognition.compare_faces(self.known_encodings, encoding, float(tolerance))
         if True in results:
             return True
 
