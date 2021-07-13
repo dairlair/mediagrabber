@@ -41,7 +41,7 @@ class TestMemorizingFromPhotos:
         self.memorizing(mg, photos_files, "direct")
 
     def test_memorizing_from_video_urls(self, mg, video_urls):
-        self.memorizing(mg, video_urls, "youtubedl")
+        self.memorizing(mg, video_urls, "ytdlp")
 
     def memorizing(self, mg, addresses, downloader="youtubedl"):
         mg: MediaGrabber = mg
