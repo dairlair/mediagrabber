@@ -1,6 +1,7 @@
 # MediaGrabber
 
 [![codecov](https://codecov.io/gh/dairlair/mediagrabber/branch/main/graph/badge.svg?token=P76Zts58lp)](undefined)
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/dairlair/mediagrabber)
 
 The cloud native application for the face recognition from the media.
 
