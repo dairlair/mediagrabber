@@ -13,5 +13,5 @@ filetype==1.0.7
 annoy==1.17.0
 SQLAlchemy==1.4.10
 alembic==1.5.8
-requests==2.24.0
+requests==2.31.0
 psycopg2-binary==2.8.6
